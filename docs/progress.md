@@ -1,8 +1,8 @@
 # Progress
 
 ## Current phase
-Planning is complete. **Phase 1 — Setup & groundwork** has not started (plan:
-docs/plans/01-setup.md); it starts when the team says so.
+**Phase 1 — Setup & groundwork** (plan: docs/plans/01-setup.md), on branch
+`phase-1/setup`.
 
 ## Completed
 - [x] Project brief and conventions in CLAUDE.md
@@ -20,14 +20,16 @@ docs/plans/01-setup.md); it starts when the team says so.
   `papers/` is git-ignored (new `.gitignore`, extended in Phase 1)
 - [x] Conda env `script-gap` created (2026-10-27): Python 3.11.18 + pip from
   conda-forge; no project packages installed yet
+- [x] Phase 1 task 1 (2026-10-27): reference paper setup and results in
+  docs/paper_notes.md (Tables 1–2 checked number by number against the paper text)
 
 ## In progress
-- (nothing)
+- Phase 1 — Setup & groundwork: tasks 2–7 remain
 
 ## Next up
-- Phase 1 — Setup & groundwork: read the reference paper into docs/paper_notes.md,
-  pinned requirements.txt installed into `script-gap`, repo skeleton + .gitignore,
-  src/utils (seed, config, run-file I/O), environment smoke test
+- Phase 1 tasks 2–7: pinned requirements.txt installed into `script-gap`, repo skeleton
+  + .gitignore, src/utils (seed, config, run-file I/O), environment smoke test, dense
+  model + metric cutoff decisions
 
 ## Open decisions / questions
 - Languages → decided: Hindi core, Gujarati as a separate droppable phase (Phase 10,
