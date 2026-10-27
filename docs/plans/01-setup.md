@@ -17,7 +17,7 @@ Get a working, reproducible environment and repo skeleton, and pin down exactly 
    - retrieval models and baselines
    - metrics and cutoffs
    - headline results (copied from the paper, with table/figure number)
-2. **Create a Python 3.11 env** (venv or conda) and a pinned `requirements.txt`:
+2. **Install packages into the conda env `script-gap`** (Python 3.11, already created) from a pinned `requirements.txt`:
    the "decided" libraries from `docs/SPECS.md` §3 (python-terrier, ir_datasets, ir_measures, ranx, sentence-transformers, torch CUDA build, indic_transliteration, pandas, pyyaml, matplotlib, jupyter, pytest, ruff).
 3. **Create the repo skeleton** from `docs/SPECS.md` §4: `src/{data,retrieval,train,eval,utils}`, `scripts/`, `configs/`, `results/`, `models/` and `data/` (both git-ignored), `app/`, `notebooks/`; `docs/` already exists.
 4. **Write a `.gitignore`** covering data, indexes, checkpoints (`*.pt`, `*.bin`, `*.safetensors`, `*.faiss`), `.env`, and caches.
@@ -43,7 +43,7 @@ Get a working, reproducible environment and repo skeleton, and pin down exactly 
 - Confirm the starting dense model.
 
 ## Risks / fallback
-- A library fails on Windows/Python 3.11 → try conda, or WSL for that piece only; record what was done.
+- A library fails on Windows/Python 3.11 → try the conda-forge package, or WSL for that piece only; record what was done.
 
 ## What we found
 _(fill in at the end of the phase)_
