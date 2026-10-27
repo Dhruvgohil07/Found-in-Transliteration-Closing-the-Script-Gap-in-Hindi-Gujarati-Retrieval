@@ -56,7 +56,7 @@ New documents get added here as phases need them, and this tree is updated when 
 
 ## Environment (checked)
 - GPU: RTX 4060 Laptop, **8 GB VRAM** → small/base models, fp16.
-- System Python is 3.13.5 → use a separate **Python 3.11** env (several IR/transliteration libraries lag behind 3.13).
+- Default Python is 3.13 → the project uses its own conda env `script-gap` with **Python 3.11**, a version the whole core stack supports.
 - Java 17 → fine for PyTerrier (recent Pyserini needs Java 21).
 
 ## Main risks

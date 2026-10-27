@@ -31,7 +31,7 @@ This project **reproduces that script gap** and **builds and compares methods th
 | Languages | Hindi = core; Gujarati = separate, droppable phase (cut line: Day 12) |
 | GPU | NVIDIA RTX 4060 Laptop, **8 GB VRAM** → small/base encoders, fp16 |
 | OS | Windows 11 (WSL allowed as a fallback for tools that don't run natively) |
-| Python | System Python is 3.13 → project uses a separate **Python 3.11** environment |
+| Python | Dedicated conda env `script-gap` with **Python 3.11** (conda-forge), kept separate from the base Python 3.13 |
 | Java | 17 (needed by PyTerrier; recent Pyserini would need Java 21) |
 
 ---
@@ -41,7 +41,7 @@ This project **reproduces that script gap** and **builds and compares methods th
 | Layer | Choice | Status |
 |---|---|---|
 | Language | Python 3.11, type hints on functions | decided |
-| Environment | `venv` + `pip` with a pinned `requirements.txt` (conda only if a package needs it) | decided |
+| Environment | conda env `script-gap` (Python 3.11 from conda-forge); packages installed with `pip` from a pinned `requirements.txt` | decided |
 | Datasets | `ir_datasets` | decided |
 | BM25 / indexing | PyTerrier (Terrier BM25, Java 17) | decided |
 | Dense retrieval | sentence-transformers + PyTorch (CUDA) | decided |
