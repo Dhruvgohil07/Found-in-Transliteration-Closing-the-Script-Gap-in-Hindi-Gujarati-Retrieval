@@ -1,6 +1,6 @@
 # Phase 1 — Setup & groundwork
 
-**Status:** Not started · **Days:** 1
+**Status:** In progress (task 1 done) · **Days:** 1
 
 ## Goal
 Get a working, reproducible environment and repo skeleton, and pin down exactly what the reference paper did, so later phases don't rest on assumptions.
