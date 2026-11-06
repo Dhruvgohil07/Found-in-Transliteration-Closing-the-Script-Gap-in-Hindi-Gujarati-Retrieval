@@ -45,7 +45,7 @@ This project **reproduces that script gap** and **builds and compares methods th
 | Datasets | `ir_datasets` | decided |
 | BM25 / indexing | PyTerrier (Terrier BM25, Java 17) | decided |
 | Dense retrieval | sentence-transformers + PyTorch (CUDA) | decided |
-| Starting dense model | `intfloat/multilingual-e5-small` or `-base` | confirm in Phase 1 |
+| Starting dense model | `intfloat/multilingual-e5-base` (main); `-small` for quick debugging runs; `BAAI/bge-m3` off-the-shelf only, as a reference point to the paper (it does not fit fine-tuning in 8 GB) | decided (Phase 1) |
 | Vector search | exact search over cached embeddings (NumPy / torch); FAISS only if needed | decided |
 | Back-transliteration (Latin → native) | IndicXlit (AI4Bharat); fallback: WSL or an HF seq2seq model | confirm in Phase 5 |
 | Rule-based romanization | `indic_transliteration` (ITRANS / ISO) | decided |
@@ -75,6 +75,7 @@ src/
   eval/               metrics, significance tests, result tables
   utils/              seeds, config loading, run-file I/O
 scripts/              small entry-point scripts (e.g. environment check)
+tests/                pytest unit tests for pure functions in src/
 configs/              one YAML file per experiment
 results/
   runs/               TREC run files
@@ -95,6 +96,8 @@ docs/
 
 - All written documentation lives under `docs/`. When a phase needs a new document, add it there and update this tree and the one in `docs/plans/00-overview.md`.
 - `src/` code is importable modules; `scripts/` and notebooks call into `src/`, never the other way around.
+- Everything runs from the repo root and imports from `src` as a package (`from src.utils.seed import set_seed`): scripts as `python -m scripts.<name>`, tests as `python -m pytest`. No install step is needed.
+- Empty folders that must exist in a fresh clone hold a `.gitkeep` placeholder; `data/` and `models/` are created locally and never committed.
 
 ---
 
@@ -129,7 +132,7 @@ Generated query sets are produced once and **frozen**; regeneration only on purp
 ### 5.4 File formats
 - Queries: TSV, `qid<TAB>text`, UTF-8, no header.
 - Qrels: TREC format, `qid 0 docid relevance`.
-- Runs: TREC format, `qid Q0 docid rank score run_tag`, 100 results per query by default (Recall@100).
+- Runs: TREC format, `qid Q0 docid rank score run_tag`, 1000 results per query by default (needed for Recall@1000).
 
 ---
 
@@ -171,7 +174,7 @@ $$\text{nDCG@}k = \frac{1}{\text{IDCG@}k}\sum_{i=1}^{k} \frac{2^{rel_i}-1}{\log_
 $$\text{MRR@}k = \frac{1}{|Q|}\sum_{q \in Q} \frac{1}{\text{rank}_q}\quad(0 \text{ if no relevant document in the top } k)$$
 $$\text{Recall@}k = \frac{|\text{relevant} \cap \text{top-}k|}{|\text{relevant}|}$$
 
-Reported cutoffs: **nDCG@10, MRR@10, Recall@100**.
+Reported cutoffs: **nDCG@10, MRR@10, Recall@100** (main), plus **Recall@1000** as a secondary metric so recall is directly comparable with the reference paper, which reports R@1000 (`docs/paper_notes.md` §5).
 
 ### 7.2 Comparing methods
 - Paired significance test per query (paired t-test), with a multiple-comparison correction when several methods are compared to one baseline.
@@ -192,7 +195,7 @@ One row per evaluated run, appended by the evaluation code (never edited by hand
 | `split` | `test` |
 | `config` | `configs/baseline_bm25.yaml` |
 | `seed` | `42` |
-| `ndcg@10`, `mrr@10`, `recall@100` | metric values |
+| `ndcg@10`, `mrr@10`, `recall@100`, `recall@1000` | metric values |
 | `run_file` | `results/runs/hi_bm25_roman_natural_test.trec` |
 
 ---
@@ -218,7 +221,7 @@ retrieval:
   index: data/indexes/hi_native
   k1: 1.2
   b: 0.75
-  top_k: 100
+  top_k: 1000
 output:
   run_file: results/runs/hi_bm25_roman_natural_test.trec
 ```
