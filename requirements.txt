@@ -1,0 +1,44 @@
+# Pinned dependencies for the conda env `script-gap` (Python 3.11).
+#
+# Setup:
+#   conda create -n script-gap -c conda-forge --override-channels python=3.11 pip
+#   conda activate script-gap
+#   python -m pip install -r requirements.txt
+#
+# torch is the CUDA 12.6 build, which only exists on the PyTorch index below.
+# Java 17 must be installed separately (PyTerrier runs Terrier on the JVM).
+
+--extra-index-url https://download.pytorch.org/whl/cu126
+
+# --- Deep learning ---
+torch==2.14.1+cu126
+sentence-transformers==6.2.0
+
+# --- IR: data, retrieval, evaluation ---
+ir_datasets==0.6.3
+python-terrier==1.0
+ir-measures==0.4.3
+ranx==0.3.21
+
+# --- Transliteration ---
+indic-transliteration==2.3.82
+
+# --- Data, configs, figures ---
+pandas==3.1.1
+pyyaml==6.0.3
+matplotlib==3.11.2
+
+# --- Notebooks, tests, lint ---
+jupyter==1.1.1
+pytest==9.2.0
+ruff==0.17.3
+
+# --- Pinned transitive dependencies that can change results ---
+# Not imported directly by us, but a different version could change
+# tokenization, scoring or numerics, so they are fixed too.
+pyterrier==1.1.2
+transformers==5.22.1
+tokenizers==0.23.3
+huggingface-hub==2.4.0
+numpy==2.4.6
+scipy==1.17.1
