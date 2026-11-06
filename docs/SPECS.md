@@ -177,7 +177,7 @@ $$\text{Recall@}k = \frac{|\text{relevant} \cap \text{top-}k|}{|\text{relevant}|
 Reported cutoffs: **nDCG@10, MRR@10, Recall@100** (main), plus **Recall@1000** as a secondary metric so recall is directly comparable with the reference paper, which reports R@1000 (`docs/paper_notes.md` §5).
 
 ### 7.2 Comparing methods
-- Paired significance test per query (paired t-test), with a multiple-comparison correction when several methods are compared to one baseline.
+- Paired significance test per query (paired t-test), with a **Bonferroni correction** when several methods are compared to one baseline, as in the reference paper: with $m$ comparisons, a result is significant only if $p < \alpha / m$.
 - **Gap recovered** — how much of the native-vs-romanized gap a method closes:
   $$\text{GapRecovered} = \frac{M_{\text{method}} - M_{\text{roman}}}{M_{\text{native}} - M_{\text{roman}}}$$
 - Per-query scores are always saved, so wins/losses and failure buckets (spelling variation, code-mixing, named entities, query length) can be analysed (Phase 9).

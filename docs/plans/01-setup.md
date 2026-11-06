@@ -1,6 +1,6 @@
 # Phase 1 — Setup & groundwork
 
-**Status:** In progress (tasks 1–7 done; review gate next) · **Days:** 1
+**Status:** Done (review gate approved 2026-11-06) · **Days:** 1
 
 ## Goal
 Get a working, reproducible environment and repo skeleton, and pin down exactly what the reference paper did, so later phases don't rest on assumptions.
@@ -58,4 +58,35 @@ Get a working, reproducible environment and repo skeleton, and pin down exactly 
 - A library fails on Windows/Python 3.11 → try the conda-forge package, or WSL for that piece only; record what was done.
 
 ## What we found
-_(fill in at the end of the phase)_
+
+**Exit criteria: met.** `python -m scripts.check_env` passes 6/6 (Python 3.11, pinned versions,
+imports, fp16 on the RTX 4060, Java 17 + Terrier 5.11, Hindi BM25 end to end), and every number
+in `docs/paper_notes.md` is traced to a table or section of the paper (Tables 1–2 checked number
+by number).
+
+**Surprises**
+- **Terrier silently drops Devanagari.** Its default English tokeniser, and `tokeniser="UTF"`
+  (wrong case), both build a Hindi index with 0 terms and only a warning. Every Hindi/Gujarati
+  index must use `tokeniser="utf"`. Without the end-to-end check, every Hindi BM25 number from
+  Phase 4 on could have been quietly wrong.
+- **GPU memory overflow on Windows does not always raise OOM.** The driver spilled BGE-M3's
+  fine-tuning step into system RAM, so it kept running at 0% GPU use instead of failing. A peak
+  above 8 GB means "too slow to use", not "fits".
+- **Fine-tuning memory barely depends on batch size** for these models (e.g. e5-base: 5.22 GB at
+  batch 8, 5.26 GB at batch 32): the weights, gradients and AdamW state dominate, not the batch.
+- **The paper has no lexical baseline** and leaves out its training hyperparameters, Uroman
+  options and significance test (`paper_notes.md` §7). Our BM25 baselines fill the first gap.
+
+**Decisions**
+- Dense model: `multilingual-e5-base` (main), `-small` for debugging, BGE-M3 off-the-shelf only
+  (task 7 table above).
+- Metrics: nDCG@10, MRR@10, R@100, plus R@1000 as secondary; runs are 1000 deep.
+- Reproduction scope: the paper's setup on Hindi (native vs romanized versions of the same
+  queries against native documents), compared by pattern, not by number
+  (`paper_notes.md` §8).
+- Significance: paired t-test with Bonferroni correction, as in the paper (SPECS §7.2).
+- Missing paper details are looked up in its code repository at the start of the phase that
+  needs them (Phase 3, Phase 7).
+
+**Time.** Planned as 1 working day; the recorded dates run from 2026-10-27 (task 1) to
+2026-11-06 (tasks 2–7 and the review gate).

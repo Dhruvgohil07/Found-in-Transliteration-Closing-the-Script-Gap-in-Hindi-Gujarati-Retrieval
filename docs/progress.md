@@ -1,8 +1,8 @@
 # Progress
 
 ## Current phase
-**Phase 1 — Setup & groundwork** (plan: docs/plans/01-setup.md), on branch
-`phase-1/setup`.
+**Phase 1 — Setup & groundwork: done** (review gate approved 2026-11-06). Phase 2 — Data
+(docs/plans/02-data.md) is next and starts on our go-ahead.
 
 ## Completed
 - [x] Project brief and conventions in CLAUDE.md
@@ -37,13 +37,15 @@
 - [x] Phase 1 task 7 (2026-11-06): `scripts/bench_dense_models.py` measured size,
   encoding speed and fine-tuning memory of e5-small, e5-base and BGE-M3 on the
   RTX 4060 (numbers in docs/plans/01-setup.md); dense model and metric cutoffs decided
+- [x] Phase 1 merged into `main` (2026-11-06)
+- [x] Phase 1 review gate approved (2026-11-06): evaluation setup agreed, dense model
+  confirmed; "What we found" filled in docs/plans/01-setup.md
 
 ## In progress
-- Phase 1 — Setup & groundwork: all tasks done, review gate pending
+- Nothing
 
 ## Next up
-- Phase 1 review gate: go through docs/paper_notes.md and confirm the evaluation setup
-  and the dense model; then fill in "What we found" in docs/plans/01-setup.md
+- Phase 2 — Data (docs/plans/02-data.md), on our go-ahead
 
 ## Open decisions / questions
 - Languages → decided: Hindi core, Gujarati as a separate droppable phase (Phase 10,
@@ -76,6 +78,12 @@
 - Metric cutoffs → decided: nDCG@10, MRR@10, R@100 (main) plus R@1000 (secondary, so
   recall is comparable with the paper, which reports R@1000); runs are therefore 1000
   deep (`DEFAULT_TOP_K = 1000` in src/utils/runs.py)
+- Reproduction scope → decided: the paper's setup on Hindi (native vs romanized versions
+  of the same queries against native documents), compared by pattern, not by number (our
+  language, collection and model all differ from the paper's)
+- Significance correction → decided: paired t-test with Bonferroni, as in the paper
+- Paper's code repository → decided: consult it at the start of the phase that needs a
+  missing detail (Uroman options in Phase 3, training setup in Phase 7), not upfront
 - Fine-tuning setups → open: the paper compares native-only (N), 50/50 mixed (50) and
   romanized-only (T) training; consider mirroring all three in Phase 7
 - Back-transliteration tool → open: IndicXlit first, fallback decided at the start of
