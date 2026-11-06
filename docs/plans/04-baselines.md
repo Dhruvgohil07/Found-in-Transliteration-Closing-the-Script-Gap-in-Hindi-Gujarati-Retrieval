@@ -11,7 +11,7 @@ Build the evaluation harness that every later phase uses, and **reproduce the sc
 
 ## Tasks
 1. **Evaluation harness** (`src/eval/`), using `ir_measures`:
-   - nDCG@10, MRR@10 and Recall@100 for a run file + qrels
+   - nDCG@10, MRR@10 and Recall@100 (plus Recall@1000, secondary) for a run file + qrels
    - per-query scores saved alongside the averages
    - paired significance test between two runs (paired t-test, with a correction when comparing many runs)
    - append one row per run to `results/results.csv`: method, query set, split, config path, seed, metrics

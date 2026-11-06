@@ -15,7 +15,7 @@ Teach a multilingual dense retriever to map **romanized queries** close to the *
    - $q$: romanized training query (natural romanization); also include the native version of the same query (mixed training).
    - $d^+$: a relevant native passage from the qrels.
    - $d^-$: **BM25 hard negatives**, i.e. high-ranked passages that are not relevant (skip the top few to reduce false negatives).
-2. **Model:** start from the base model chosen in Phase 1 (e.g. `multilingual-e5-small` or `-base`).
+2. **Model:** start from `multilingual-e5-base`, the model chosen in Phase 1 (`-small` for quick debugging runs). BGE-M3 does not fit fine-tuning in 8 GB (Phase 1 benchmark).
 3. **Training setup for 8 GB VRAM:**
    - sentence-transformers with `CachedMultipleNegativesRankingLoss` (large effective batch with small memory)
    - fp16, max_len ~256 for passages and ~32 for queries

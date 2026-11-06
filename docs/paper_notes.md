@@ -161,9 +161,9 @@ none of them.
 | Collection | mMARCO/v2 + neuCLIR | MIRACL-hi (candidate) | Open question: does mMARCO/v2 have Hindi? (Phase 2) |
 | Romanized queries | Uroman, rule-based, machine-generated | natural "Hinglish" (main) + rule-based (contrast) + small hand-made set | Uroman is a candidate for our rule-based set (Phase 3) |
 | Lexical baseline | none | BM25 native + romanized (Phase 4) | We add what the paper leaves out |
-| Dense model | BGE-M3 (single-vector) | multilingual-e5-small/-base | **Decide in Phase 1** (8 GB VRAM) |
+| Dense model | BGE-M3 (single-vector) | multilingual-e5-base (main), -small for debugging | **Decided in Phase 1:** BGE-M3 needs more than 8 GB to fine-tune, so we use it off-the-shelf only, as a reference point |
 | Reranker | mT5 | none planned | Out of scope unless time allows |
 | Fine-tuning | N / 50 / T configurations | romanized query → native passage with BM25 hard negatives (Phase 7) | Mirroring N / 50 / T would make our Phase 7 directly comparable |
 | Gap-closing beyond training | none | back-transliteration, document-side normalization, hybrid fusion | Our main addition |
-| Metrics | MRR@10 + R@1000; nDCG@20 + R@1000 | nDCG@10, MRR@10, R@100 | **Decide in Phase 1** |
+| Metrics | MRR@10 + R@1000; nDCG@20 + R@1000 | nDCG@10, MRR@10, R@100, plus R@1000 | **Decided in Phase 1:** R@1000 added as a secondary metric so recall is comparable with the paper |
 | Significance | Bonferroni-corrected, test not named | paired t-test + multiple-comparison correction | Compatible |
