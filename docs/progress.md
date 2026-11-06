@@ -40,6 +40,9 @@
 - [x] Phase 1 merged into `main` (2026-11-06)
 - [x] Phase 1 review gate approved (2026-11-06): evaluation setup agreed, dense model
   confirmed; "What we found" filled in docs/plans/01-setup.md
+- [x] Git workflow rules added to CLAUDE.md §4 (2026-11-06): after "merged", sync `main`
+  and delete local branches whose commits are all in `main`; commit less often, with at
+  most one commit per type per batch and the changes listed point by point
 
 ## In progress
 - Nothing
