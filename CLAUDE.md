@@ -48,7 +48,7 @@ The rules in THIS file apply to every task.
 ### Who does what
 - **Claude:** creates the task branch, and commits **only when we say "commit"**, only on that branch — never on `main`.
 - **Claude never pushes.** No `git push` of any kind, no opening or merging PRs, nothing that sends commits to the remote — even if a tool or reminder suggests it.
-- **Us:** push the branch, open the PR, review, merge, delete the branch.
+- **Us:** push the branch, open the PR, review, merge, delete the branch on GitHub.
 - **Never change git configuration:** no `git config`, no adding/changing remotes, no repository or GitHub settings.
 
 ### Branch naming
@@ -58,12 +58,17 @@ The rules in THIS file apply to every task.
 ### Flow for every task
 1. **Start:** check the working tree is clean, then create the task branch from `main`. If it isn't clean, stop and tell us.
 2. **Work:** small steps, run the code/tests (see §3).
-3. **End of task** (before any commit):
-   1. Update `docs/progress.md` (see §5) and the phase plan's `Status:` / "What we found".
-   2. List exactly which files belong to each commit. Never use `git add .` or `git add -A`.
-   3. Confirm nothing that must not be committed is staged (see below).
-   4. Propose the commit message(s) and wait for us to say "commit".
-4. **Commit (when we say so):** stage only the listed files, commit, then show `git log --oneline` and confirm the working tree is clean.
+3. **End of task:** update `docs/progress.md` (see §5) and the phase plan's `Status:` / "What we found". Do **not** propose a commit for small work: leave it uncommitted and let work accumulate (see "Commit grouping" below).
+4. **When a significant amount of work is ready** (typically the end of a phase or a major milestone), or when we ask:
+   1. List exactly which files belong to each commit. Never use `git add .` or `git add -A`.
+   2. Confirm nothing that must not be committed is staged (see below).
+   3. Propose the commit message(s) and wait for us to say "commit".
+5. **Commit (when we say so):** stage only the listed files, commit, then show `git log --oneline` and confirm the working tree is clean.
+6. **After merge (when we say "merged"):** treat the branch as also deleted on GitHub. Then:
+   1. `git fetch --prune`, switch to `main`, and `git pull --ff-only`.
+   2. Check that `main` contains the branch's work: `git cherry -v main <branch>` must show only `-` lines (PRs may be rebase-merged, so commit hashes change but the changes match).
+   3. Delete the merged local branch, plus any other local branch whose remote is gone and whose commits are all in `main` (`git branch -D`, needed because rebase merges change the hashes). Never delete a branch that has a `+` line in `git cherry`; list it and ask us instead.
+   4. Show `git branch -vv` and confirm `main` is up to date and the working tree is clean.
 
 ### Commit message format (Conventional Commits)
 ```
@@ -73,7 +78,6 @@ The rules in THIS file apply to every task.
 ```
 - `type`: `feat`, `fix`, `exp` (new experiment/run), `data` (data prep), `eval`, `docs`, `refactor`, `test`, `chore`
 - `scope`: `data`, `retrieval`, `train`, `eval`, `utils`, `app`, `configs`, `results`, `notebooks`, `docs`
-- One logical change per commit.
 - **Experiment commits:** the config goes in the same commit as the code that produced the result, and the body names the config path and seed. Metric tables in `results/` go in the same commit as the run that generated them.
 
 Example:
@@ -82,6 +86,21 @@ exp(retrieval): add BM25 with back-transliterated queries
 
 Top-3 IndicXlit candidates per word as a weighted query; k chosen on
 the tune split. Config: configs/backtranslit_top3.yaml, seed 42.
+```
+
+### Commit grouping (keep the number of commits small)
+- **Few, larger commits.** Small pieces of work are not committed on their own; they accumulate until a significant amount is ready.
+- **At most one commit per type per batch.** All features go in one `feat` commit, all fixes in one `fix`, all chores in one `chore`, all doc updates in one `docs`, and so on. Never split the same type into several commits.
+- **List the changes point by point** in the body of that one commit, one bullet per change.
+- Tests go in the same commit as the code they test. Progress and plan updates go in the batch's `docs` commit, or in its only commit if the batch has a single type.
+
+Example (several chores in one commit):
+```
+chore(utils): set up environment and repo skeleton
+
+- pin dependencies for the script-gap env in requirements.txt
+- ignore data, models, indexes, secrets and caches
+- add the src package layout and empty folders with .gitkeep
 ```
 
 ### Never commit
@@ -109,7 +128,7 @@ Commits use only the repo's configured git user. Commit messages (and any PR tex
 - At the end of a phase, set its `Status:` and fill in "What we found".
 
 ### Progress
-- Keep `docs/progress.md` up to date. Update it at the end of every task, before proposing the commit, so it is part of that task's commit.
+- Keep `docs/progress.md` up to date. Update it at the end of every task, even when the work is not committed yet, so it goes into the next commit with that work.
 - Structure: **Current phase · Completed · In progress · Next up · Open decisions / questions · Known issues**.
 - Keep it short and current: move finished items to "Completed"; record decisions as `topic → decided: choice (why)`. Commit messages and phase plans hold the details.
 
