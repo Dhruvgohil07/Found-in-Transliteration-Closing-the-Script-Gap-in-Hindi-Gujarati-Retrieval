@@ -1,0 +1,24 @@
+# Phase 2: Hindi data preparation (docs/plans/02-data.md).
+# Used by scripts/prepare_data.py, scripts/data_stats.py and scripts/sample_queries.py.
+experiment: data_hi
+lang: hi
+seed: 42
+
+dataset:
+  docs: miracl/hi             # 506,264 Wikipedia passages
+  labeled: miracl/hi/dev      # the only split with public qrels -> carved into tune/test
+  train: miracl/hi/train      # training queries for Phase 7
+
+split:
+  n_tune: 100                 # the remaining dev queries form the test split
+
+output_dir: data/processed    # {tune,test,train}_{queries,qrels}.tsv (git-ignored)
+
+stats:
+  tokenizer: intfloat/multilingual-e5-base   # the main dense model (Phase 1)
+  data_card: docs/data/data_card_hi.md
+
+sample:
+  split: tune                 # never look at test queries
+  n_queries: 20
+  file: data/processed/sample_hi.md
