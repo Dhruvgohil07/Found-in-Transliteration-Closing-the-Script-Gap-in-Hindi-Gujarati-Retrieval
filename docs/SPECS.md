@@ -131,7 +131,7 @@ Generated query sets are produced once and **frozen**; regeneration only on purp
 
 ### 5.4 File formats
 - Queries: TSV, `qid<TAB>text`, UTF-8, no header.
-- Qrels: TREC format, `qid 0 docid relevance`.
+- Qrels: TREC format with tabs, `qid<TAB>0<TAB>docid<TAB>relevance`, UTF-8 (valid TSV, and still readable by `ir_measures` / `trec_eval`, which split on any whitespace).
 - Runs: TREC format, `qid Q0 docid rank score run_tag`, 1000 results per query by default (needed for Recall@1000).
 
 ---

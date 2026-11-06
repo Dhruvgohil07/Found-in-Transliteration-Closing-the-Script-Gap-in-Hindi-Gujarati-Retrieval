@@ -1,8 +1,8 @@
 # Progress
 
 ## Current phase
-**Phase 1 — Setup & groundwork: done** (review gate approved 2026-11-06). Phase 2 — Data
-(docs/plans/02-data.md) is next and starts on our go-ahead.
+**Phase 2 — Data** (plan: docs/plans/02-data.md), on branch `phase-2/data`. Phase 1 is
+done (review gate approved 2026-11-06).
 
 ## Completed
 - [x] Project brief and conventions in CLAUDE.md
@@ -43,12 +43,23 @@
 - [x] Git workflow rules added to CLAUDE.md §4 (2026-11-06): after "merged", sync `main`
   and delete local branches whose commits are all in `main`; commit less often, with at
   most one commit per type per batch and the changes listed point by point
+- [x] Phase 2 task 1 (2026-11-06): collection chosen (MIRACL-hi) and split sizes fixed
+  (100 tune / 250 test from the 350 dev queries, seed 42)
+- [x] Phase 2 task 2 (2026-11-06): `src/data/load.py` loads MIRACL-hi end to end (350 dev
+  + 1,169 train + 819 test-b queries, 506,264 passages, in 76 s); `src/data/splits.py`
+  for fixed-seed splits and the overlap check; 12 new tests (25 in total), ruff clean
+- [x] Phase 2 tasks 3–6 (2026-11-06): `scripts/prepare_data.py` writes the tune/test/train
+  files (100 / 250 / 1,168 queries; byte-identical on re-run); one train query dropped as
+  a text duplicate of a test query; `scripts/data_stats.py` fills the statistics in
+  docs/data/data_card_hi.md; `scripts/sample_queries.py` writes 20 tune queries with
+  their relevant passages to `data/processed/sample_hi.md`
 
 ## In progress
-- Nothing
+- Phase 2 — Data: review gate pending
 
 ## Next up
-- Phase 2 — Data (docs/plans/02-data.md), on our go-ahead
+- Phase 2 review gate: read docs/data/data_card_hi.md and `data/processed/sample_hi.md`;
+  is MIRACL-hi a good fit?
 
 ## Open decisions / questions
 - Languages → decided: Hindi core, Gujarati as a separate droppable phase (Phase 10,
@@ -69,9 +80,17 @@
   broken by docid, scores at full precision so files round-trip exactly)
 - Lint rules → decided: ruff 0.17.3 defaults, no project config (the version is pinned,
   so everyone runs the same rules)
-- Hindi collection → open: MIRACL-hi is the primary candidate. The paper itself used
-  mMARCO/v2 (Chinese, Russian), so check whether mMARCO/v2 has Hindi and choose
-  between them in Phase 2
+- Hindi collection → decided: MIRACL-hi (native-written queries and passages, about 10
+  judgments per query, 506K passages). `mmarco/v2/hi` (the paper's collection) exists in
+  ir_datasets but has 8.8M machine-translated passages and about 1 judgment per query
+- Tune/test split → decided: 100 tune / 250 test from MIRACL-hi dev (350 queries, the
+  only split with public qrels), seed 42
+- Raw data location → decided: the ir_datasets cache (`~/.ir_datasets`), outside the
+  repo; `data/processed/` holds our own split files
+- Train/test leakage → decided: train queries that repeat a tune/test query (same id or
+  same normalized text) are dropped from train, so the evaluation splits stay intact
+- Phase 7 query length → open: train queries reach 41 e5 tokens, so the 32-token query
+  length from the Phase 1 benchmark is too short; plan for about 48 in Phase 7
 - Natural romanization tool → open: decide in Phase 3. The paper romanized with Uroman
   (rule-based); candidate for our rule-based condition
 - Starting dense model → decided: multilingual-e5-base as the main model (fine-tunes in
@@ -105,9 +124,12 @@
   ignored), produce an index with 0 terms and only a warning. Every Hindi/Gujarati
   index must use `tokeniser="utf"` (lowercase) or `pt.terrier.TerrierTokeniser.utf`;
   queries then use the same tokeniser automatically. scripts/check_env.py guards this
-- Windows console is cp1252: printing Devanagari from Python crashes with
-  `UnicodeEncodeError`; scripts that print Hindi need `sys.stdout.reconfigure(
-  encoding="utf-8")` or should write to UTF-8 files instead (Phase 2)
+- **Python must run in UTF-8 mode on Windows** (found 2026-11-06): ir_datasets opens
+  some files without naming an encoding, so reading MIRACL-hi queries under the default
+  cp1252 fails with `UnicodeDecodeError`. Fixed: `PYTHONUTF8=1` is set as a conda env
+  variable of `script-gap` (active after `conda activate`; setup line added to
+  requirements.txt); this also fixes printing Devanagari to the console. The loaders
+  and `scripts/check_env.py` (now 7 checks) stop with the fix in the message if it is off
 - On Windows the JVM may keep Terrier index files open after `close()`, so deleting a
   temporary index can fail; harmless for the smoke test (cleanup errors are ignored)
 - GPU memory overflow on Windows does not always raise OOM (found 2026-11-06): the
