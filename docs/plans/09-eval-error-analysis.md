@@ -10,7 +10,7 @@ Produce the final results table and understand **why** methods succeed or fail, 
 
 ## Tasks
 1. **Final results table:** every method × every query set (native / natural / rule / human) × metrics (nDCG@10, MRR@10, Recall@100, plus Recall@1000 as secondary), on the test split.
-2. **Significance:** paired tests of each method vs BM25-romanized and vs the best single method, with a multiple-comparison correction.
+2. **Significance:** paired tests of each method vs BM25-romanized and vs the best single method, with a Bonferroni correction (SPECS §7.2).
 3. **Gap recovered:** for each method,
    $$\text{GapRecovered} = \frac{M_{\text{method}} - M_{\text{roman}}}{M_{\text{native}} - M_{\text{roman}}}$$
    (how much of the native-vs-romanized gap is closed).

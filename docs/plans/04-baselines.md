@@ -13,7 +13,7 @@ Build the evaluation harness that every later phase uses, and **reproduce the sc
 1. **Evaluation harness** (`src/eval/`), using `ir_measures`:
    - nDCG@10, MRR@10 and Recall@100 (plus Recall@1000, secondary) for a run file + qrels
    - per-query scores saved alongside the averages
-   - paired significance test between two runs (paired t-test, with a correction when comparing many runs)
+   - paired significance test between two runs (paired t-test, with a Bonferroni correction when comparing many runs; SPECS §7.2)
    - append one row per run to `results/results.csv`: method, query set, split, config path, seed, metrics
 2. **BM25 index** of the native corpus with PyTerrier (record the tokenizer/stemmer settings in the config).
 3. **Baseline runs** on the test split:

@@ -166,4 +166,13 @@ none of them.
 | Fine-tuning | N / 50 / T configurations | romanized query → native passage with BM25 hard negatives (Phase 7) | Mirroring N / 50 / T would make our Phase 7 directly comparable |
 | Gap-closing beyond training | none | back-transliteration, document-side normalization, hybrid fusion | Our main addition |
 | Metrics | MRR@10 + R@1000; nDCG@20 + R@1000 | nDCG@10, MRR@10, R@100, plus R@1000 | **Decided in Phase 1:** R@1000 added as a secondary metric so recall is comparable with the paper |
-| Significance | Bonferroni-corrected, test not named | paired t-test + multiple-comparison correction | Compatible |
+| Significance | Bonferroni-corrected, test not named | paired t-test + Bonferroni correction | **Decided in Phase 1:** same correction as the paper |
+
+**What we reproduce (decided at the Phase 1 review gate).** We reproduce the paper's
+*experimental setup* on Hindi, not its numbers: the same native documents are searched with
+native and romanized versions of the same queries, the script gap is the drop between them, and
+fine-tuning is tested as one way to close it. Our language, collection and model differ from the
+paper's, so we compare the *pattern* of results (e.g. how large the gap is relative to native
+effectiveness) rather than individual values. The details in §7 are looked up in the paper's
+code repository at the start of the phase that needs them (Uroman options in Phase 3, the
+training setup in Phase 7).
