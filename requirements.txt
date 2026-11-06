@@ -2,9 +2,12 @@
 #
 # Setup:
 #   conda create -n script-gap -c conda-forge --override-channels python=3.11 pip
+#   conda env config vars set PYTHONUTF8=1 -n script-gap
 #   conda activate script-gap
 #   python -m pip install -r requirements.txt
 #
+# PYTHONUTF8=1 puts Python in UTF-8 mode: on Windows, ir_datasets otherwise reads
+# Hindi files as cp1252 and fails (scripts/check_env.py checks this).
 # torch is the CUDA 12.6 build, which only exists on the PyTorch index below.
 # Java 17 must be installed separately (PyTerrier runs Terrier on the JVM).
 
