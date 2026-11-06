@@ -8,11 +8,12 @@ Each check prints PASS or FAIL with a short detail; the exit code is 1 if any
 check fails. The checks are:
 
 1. Python is 3.11.
-2. Installed package versions match the pins in requirements.txt.
-3. Every library we use can be imported.
-4. torch sees the GPU and can run an fp16 matrix multiply on it.
-5. PyTerrier starts the JVM on Java 17 or newer.
-6. A tiny Hindi BM25 index works end to end: Devanagari words are indexed and
+2. Python runs in UTF-8 mode (needed to read Hindi with ir_datasets on Windows).
+3. Installed package versions match the pins in requirements.txt.
+4. Every library we use can be imported.
+5. torch sees the GPU and can run an fp16 matrix multiply on it.
+6. PyTerrier starts the JVM on Java 17 or newer.
+7. A tiny Hindi BM25 index works end to end: Devanagari words are indexed and
    the right document comes first. Terrier's default English tokeniser drops
    every non-Latin character, so the index must use tokeniser="utf".
 """
@@ -47,6 +48,14 @@ def check_python() -> str:
     if (version.major, version.minor) != (3, 11):
         raise RuntimeError(f"expected Python 3.11, got {sys.version.split()[0]}")
     return sys.version.split()[0]
+
+
+def check_utf8_mode() -> str:
+    # ir_datasets reads some files with the default encoding (cp1252 on Windows),
+    # which cannot decode Hindi; UTF-8 mode makes the default UTF-8.
+    if not sys.flags.utf8_mode:
+        raise RuntimeError("set PYTHONUTF8=1 in the environment, or run with 'python -X utf8'")
+    return "on"
 
 
 def check_pinned_versions() -> str:
@@ -142,6 +151,7 @@ def check_hindi_bm25() -> str:
 
 CHECKS: list[tuple[str, Callable[[], str]]] = [
     ("Python 3.11", check_python),
+    ("UTF-8 mode", check_utf8_mode),
     ("Pinned versions", check_pinned_versions),
     ("Imports", check_imports),
     ("GPU (torch + CUDA)", check_gpu),
