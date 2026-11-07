@@ -1,0 +1,47 @@
+# Phase 3: romanized versions of the Hindi queries (docs/plans/03-romanized-queries.md).
+# Used by scripts/romanize_queries.py, scripts/human_romanization.py and
+# scripts/romanization_quality.py.
+experiment: romanize_hi
+lang: hi
+seed: 42
+
+input_dir: data/processed     # native {split}_queries.tsv from Phase 2
+output_dir: data/romanized    # {split}_queries_roman_{method}.tsv (versioned, see .gitignore)
+splits: [tune, test, train]
+
+# Contrast condition: the reference paper's tool and call, on the raw query text
+# (Uroman().romanize_string(text, lang=...), as in the paper's transliterate.py).
+rule:
+  tool: uroman==1.3.1.1
+  lang: hin                   # ISO 639-3 code for Hindi
+
+# Main condition: an LLM writes each query the way a user would type it.
+# Run once; the output files are frozen and never regenerated.
+natural:
+  tool: google-genai==2.34.0
+  model: gemini-3.5-flash     # requested id; the version that answered is saved in the meta file
+  temperature: 0.0
+  batch_size: 75              # queries per request (the first 475 queries used 25; see the plan)
+  seconds_between_calls: 6    # stays under free-tier request-per-minute limits
+  instructions: |
+    You romanize Hindi web-search queries. You get a JSON list of queries written
+    in Devanagari. For each one, write how a typical Indian user would type the
+    same query in Latin letters on a phone or laptop keyboard: casual, everyday
+    "Hinglish" spelling, all lowercase, no accents or diacritics.
+    Spell English words and well-known names the usual English way
+    (क्रिकेट -> cricket, दिल्ली -> delhi). Keep digits and punctuation such as "?" as
+    they are. Do not translate, explain, correct, add or drop words: romanize every
+    word of the query.
+    Example: ["किसान आंदोलन की ताज़ा खबर"] -> ["kisan andolan ki taza khabar"]
+    Answer with a JSON list of strings: one romanized query per input query, in
+    the same order.
+
+# Realism check: test queries romanized by hand (one version, A).
+human:
+  split: test
+  n_queries: 50
+  sheet_dir: data/processed   # the sheet to fill in (working file, git-ignored)
+
+quality:
+  n_review: 30                # natural-romanized tune queries for the manual review
+  review_file: data/processed/review_natural_hi.md

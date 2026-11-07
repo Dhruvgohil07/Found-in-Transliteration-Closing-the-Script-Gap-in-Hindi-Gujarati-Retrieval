@@ -1,5 +1,6 @@
 """Unit tests for src/utils: seeds, config loading and run-file I/O."""
 
+import os
 import random
 
 import numpy as np
@@ -106,3 +107,26 @@ def test_read_run_rejects_duplicate_doc(tmp_path):
     path.write_text("q1 Q0 d1 1 2.0 x\nq1 Q0 d1 2 1.0 x\n", encoding="utf-8")
     with pytest.raises(ValueError, match="duplicate"):
         read_run(path)
+
+
+def test_load_env_file_sets_missing_variables_only(tmp_path, monkeypatch):
+    from src.utils.config import load_env_file
+
+    env = tmp_path / ".env"
+    env.write_text('# comment\n\nNEW_VAR="abc"\nKEPT_VAR=from-file\n', encoding="utf-8")
+    monkeypatch.delenv("NEW_VAR", raising=False)
+    monkeypatch.setenv("KEPT_VAR", "from-environment")
+    assert load_env_file(env) == ["NEW_VAR"]
+    assert os.environ["NEW_VAR"] == "abc"
+    assert os.environ["KEPT_VAR"] == "from-environment"  # never overwritten
+    monkeypatch.delenv("NEW_VAR")
+
+
+def test_load_env_file_missing_file_and_bad_line(tmp_path):
+    from src.utils.config import load_env_file
+
+    assert load_env_file(tmp_path / "absent.env") == []
+    bad = tmp_path / ".env"
+    bad.write_text("JUST_A_NAME\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="NAME=value"):
+        load_env_file(bad)
