@@ -29,8 +29,8 @@ from src.utils.config import REPO_ROOT
 
 IMPORTS = [
     "torch", "sentence_transformers", "transformers", "ir_datasets", "pyterrier",
-    "ir_measures", "ranx", "indic_transliteration", "pandas", "yaml", "matplotlib",
-    "numpy", "scipy", "pytest",
+    "ir_measures", "ranx", "indic_transliteration", "uroman", "google.genai", "pandas",
+    "yaml", "matplotlib", "numpy", "scipy", "pytest",
 ]
 
 # Toy Hindi documents written for this check (not from any dataset).

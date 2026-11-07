@@ -43,3 +43,31 @@ def resolve_path(path: str | Path) -> Path:
     """
     path = Path(path)
     return path if path.is_absolute() else REPO_ROOT / path
+
+
+def load_env_file(path: str | Path = ".env") -> list[str]:
+    """Copy ``NAME=value`` lines from a git-ignored ``.env`` file into ``os.environ``.
+
+    This is how secrets such as ``GEMINI_API_KEY`` reach the code without being
+    written into a config or the repo. Blank lines and ``#`` comments are skipped,
+    and a variable that is already set in the environment is never overwritten.
+    A missing file is not an error. Returns the names that were set (never the values).
+    """
+    import os
+
+    path = resolve_path(path)
+    if not path.exists():
+        return []
+    loaded = []
+    for n, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        name, sep, value = line.partition("=")
+        name, value = name.strip(), value.strip().strip("\"'")
+        if not sep or not name:
+            raise ValueError(f"{path.name}:{n}: expected NAME=value")
+        if name not in os.environ:
+            os.environ[name] = value
+            loaded.append(name)
+    return loaded
