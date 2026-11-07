@@ -1,0 +1,15 @@
+{
+  "model": "gemini-3.5-flash",
+  "model_versions": [
+    "gemini-3.6-flash"
+  ],
+  "tool": "google-genai==2.34.0",
+  "temperature": 0.0,
+  "seed": 42,
+  "queries_per_batch_size": {
+    "25": 475,
+    "75": 1043
+  },
+  "instructions": "You romanize Hindi web-search queries. You get a JSON list of queries written\nin Devanagari. For each one, write how a typical Indian user would type the\nsame query in Latin letters on a phone or laptop keyboard: casual, everyday\n\"Hinglish\" spelling, all lowercase, no accents or diacritics.\nSpell English words and well-known names the usual English way\n(क्रिकेट -> cricket, दिल्ली -> delhi). Keep digits and punctuation such as \"?\" as\nthey are. Do not translate, explain, correct, add or drop words: romanize every\nword of the query.\nExample: [\"किसान आंदोलन की ताज़ा खबर\"] -> [\"kisan andolan ki taza khabar\"]\nAnswer with a JSON list of strings: one romanized query per input query, in\nthe same order.\n",
+  "finished_utc": "2026-11-07 08:49"
+}
