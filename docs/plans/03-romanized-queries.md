@@ -1,6 +1,6 @@
 # Phase 3 — Romanized query sets
 
-**Status:** Not started · **Days:** 2–3
+**Status:** Done · **Days:** 2–3
 
 ## Goal
 Create several romanized (Latin-script) versions of the **same** queries, so every method can be compared against the native-script originals under realistic and controlled conditions.
@@ -14,22 +14,29 @@ Create several romanized (Latin-script) versions of the **same** queries, so eve
    - Record the tool, version and prompt/settings in a config.
    - Run it once and **freeze the output to a file**, so results never change because of regeneration.
    - Apply it to the tune, test **and train** queries (train is needed for Phase 7).
+   _Decided (2026-11-07): an LLM, the **Gemini API** (`google-genai`), with a fixed prompt, temperature 0 and seed 42, 25 queries per request; the prompt is in `configs/romanize_hi.yaml`. IndicXlit's native → Latin model was ruled out: Phase 5 back-transliterates with IndicXlit, so queries made by the same model family would flatter Phase 5. The model id, the exact version that answered and the prompt are saved in `data/romanized/natural_meta_hi.json`._
+   _Change (2026-11-07): model `gemini-3.5-flash`, chosen in a 10-query pilot on tune (natural spellings; `gemini-3.7-flash` was overloaded). The API answered with version `gemini-3.6-flash`. The free tier allows 20 requests per day per model, so the run stopped after 475 queries (19 batches of 25). The remaining 1,043 queries run after the quota reset with **75 queries per request** (14 requests). Each query's batch size is kept in the progress file and summed up in the meta file; batching only groups independent queries into one request, so the effect on the spellings is expected to be small._
 2. **Rule-based romanization (contrast condition).** Deterministic ITRANS/ISO via `indic_transliteration`. It is less natural but fully reproducible.
+   _Change (2026-11-07): **Uroman** instead of ITRANS/ISO, because it is the reference paper's tool. The paper's `transliterate.py` calls `Uroman().romanize_string(text, lang=...)` on the raw query, and we do the same (`lang: hin`). This makes our contrast condition the paper's setup._
 3. **Human-romanized subset (realism check).**
    - Pick ~50–100 test queries with a fixed seed.
    - Romanize them by hand **twice, independently** (versions A and B), the way a user would type them into a search box, without looking at the generated versions.
    - This gives real user spellings and a measure of how much human spellings vary.
+   _Decided (2026-11-07): 50 test queries (seed 42), the fallback size, to protect the schedule. `scripts/human_romanization.py` writes two sheets that show only the native query, and later collects the filled sheets into frozen files._
+   _Change (2026-11-07): **one hand-romanized version (A) only**; version B is dropped. Without B there is no human-vs-human CER, so the realism check compares the generated sets with this one human version, and the spread between different people's spellings is not measured. Typing the same queries twice by one person was ruled out: it would measure one person's consistency, not variation between people. The "a" in the file names is kept so a version B can still be added later._
 4. **Quality check:**
    - Manual review of ~30 natural-romanized queries (flag nonsense or untransliterated output).
    - Character error rate (CER) between the generated and human romanizations, and between the two humans.
+   _Change (2026-11-07): the 30 reviewed queries come from tune, not test. `scripts/romanization_quality.py` prints the CER table and writes the review file._
+   _Decided (2026-11-07): known errors in the natural set are **kept, not corrected by hand**, so the set stays pure frozen model output. The sanity check flagged 23 of 1,518 queries whose word count differs from the native query; almost all are realistic splits or merges (`qutub minar`, `tamil nadu`, `lok sabha`, `greenhouse`). Two are real LLM insertions: `agar kisi desh ka bhugtan santulan vipreet ho gaya ho to me use kis sanstha se madad leni padegi?` (extra `me`) and `cement banane ke liye kiske mishran ko khoob tapt kiya jata is hai?` (extra `is`); one drops a word (`haal mein` for `हाल ही में`). This check only catches errors that change the word count._
 
 ## Outputs
-- `src/data/romanize.py`
-- `data/processed/queries_native.tsv`
-- `data/processed/queries_roman_natural.tsv`
-- `data/processed/queries_roman_rule.tsv`
-- `data/processed/queries_roman_human_a.tsv`, `queries_roman_human_b.tsv`
-- `configs/romanize.yaml`
+_Change (2026-11-07): one file per split and method, named like the Phase 2 files; the native queries are the Phase 2 `{split}_queries.tsv`, so no separate `queries_native.tsv`. The romanized files live in `data/romanized/`, the one data folder kept in git, because LLM and hand-typed output cannot be regenerated exactly._
+- `src/data/romanize.py` (Uroman, Gemini wrapper, edit distance and CER), `tests/test_romanize.py`
+- `scripts/romanize_queries.py`, `scripts/human_romanization.py`, `scripts/romanization_quality.py`
+- `data/romanized/{tune,test,train}_queries_roman_{rule,natural}.tsv`, `data/romanized/natural_meta_hi.json`
+- `data/romanized/test_queries_roman_human_a.tsv`
+- `configs/romanize_hi.yaml`
 - Short quality report in "What we found" (CER numbers, example outputs)
 
 ## Exit criteria
@@ -37,7 +44,7 @@ Create several romanized (Latin-script) versions of the **same** queries, so eve
 - Quality check is done and the CER numbers are recorded.
 
 ## Review gate
-- Look at side-by-side examples (native / natural / rule / human A / human B).
+- Look at side-by-side examples (native / natural / rule / human A).
 - Decide whether the natural romanization is realistic enough to be the main condition.
 
 ## Risks / fallback
@@ -45,4 +52,48 @@ Create several romanized (Latin-script) versions of the **same** queries, so eve
 - Human romanization takes too long → reduce to 50 queries.
 
 ## What we found
-_(fill in at the end of the phase)_
+
+**Exit criteria: met.** All romanized files exist in `data/romanized/` (rule and natural for tune / test / train: 100 / 250 / 1,168 queries; human A for 50 test queries), have the same query ids as the native files (checked by the scripts before writing) and are frozen (the scripts refuse to overwrite them). The quality check is done; all numbers below are printed by `scripts/romanization_quality.py`.
+
+**Realism: CER against the hand-romanized queries** (50 test queries, human A as the reference; lower-cased and whitespace-collapsed first)
+
+$$\text{CER} = \frac{\sum_q \operatorname{lev}(\hat{r}_q,\, r_q)}{\sum_q |r_q|}$$
+
+| Compared | Reference | Queries | CER |
+|---|---|---|---|
+| rule (Uroman) | human A | 50 | 0.236 |
+| natural (Gemini) | human A | 50 | 0.096 |
+
+The natural set is about 2.5 times closer to real typing than the rule set: Uroman spells every long vowel twice and every nasal as `m` (`raajaa raamamohan raay kahaam`), while Gemini and the human write `raja rammohan roy kaha(n)`. The natural set is still not identical to human typing (0 of 50 queries match exactly). The remaining differences are the normal freedom of romanized Hindi (`mein` / `me`, `kaunsi` / `konsi`), plus things only the human did: dropping or adding words (`ibrahim ka naam` without `quli`; `puri tarah band`) and typos (`sake` for `sel`, cell). The CER between natural and rule over all 1,518 queries is 0.195.
+
+**Sanity checks over all 1,518 queries**
+
+| Set | Non-ASCII | Capital letters | Word count differs from native |
+|---|---|---|---|
+| rule | 37 (2.4%) | 8 (0.5%) | 0 (0.0%) |
+| natural | 16 (1.1%) | 0 (0.0%) | 23 (1.5%) |
+
+- Non-ASCII characters are typographic quotes and dashes copied from the native queries, not untransliterated text; no romanized query contains Devanagari.
+- Of the 23 natural queries with a different word count, almost all are realistic splits or merges (`qutub minar`, `tamil nadu`, `lok sabha`, `greenhouse`). Two are LLM insertions (extra `me`, extra `is`) and one drops a word; they are kept (task 4 note).
+- Batch size: the word count differs for 5 of 475 queries (1.1%) sent 25 per request and 18 of 1,043 (1.7%) sent 75 per request, too few to show a difference.
+
+**Manual review:** 30 natural-romanized tune queries were read side by side with native and rule; all 30 look like realistic user typing, with user-like spelling variation (`bhartiya` / `bhartiye`).
+
+**Surprises**
+- **Free-tier quota:** the Gemini free tier allows 20 requests per day per model, so the natural set took two days and two batch sizes (task 1 note).
+- **The requested model is not the one that answers:** `gemini-3.5-flash` was served by `gemini-3.6-flash`; the served version is recorded in `natural_meta_hi.json`.
+- **Human typing differs from both generated sets in kind, not only in spelling:** words dropped, added or paraphrased, and typos. This is what Phase 7 must generalize to, so the human set is the check of whether a model learned real romanized Hindi or only Gemini's spelling.
+- One typed answer repeated a phrase by accident (`karne vala vidhwan karne val vidhwan`); the repeat was removed before collecting.
+
+**Limits**
+- One human version only, so the spread between different people's spellings is not measured (task 3 note).
+- 50 queries make the human set a check on the main results, not the main evidence: retrieval differences on it will rarely reach significance.
+
+**Review gate (approved 2026-11-08)**
+- The side-by-side examples (native / rule / natural / human A) were reviewed. The natural set is realistic enough to be the **main condition**; rule (Uroman) stays as the paper-comparable contrast and human A as the realism check.
+- Points to carry forward:
+  - Report realism relative to the rule set (CER 0.096 vs 0.236), not as "the LLM types like a human": there is no human-vs-human baseline.
+  - Phase 7 trains and tests on the same generator (Gemini), so its natural-set numbers may be optimistic; the human set is the required check and stays a row in the Phase 7 and Phase 9 tables.
+  - The prompt asks for English spellings of English words and names (`cricket`, `delhi`); this is realistic but makes those words impossible to back-transliterate, which the report should state.
+  - The generated sets have realistic spelling but perfect content (no dropped words or typos), so the gap measured on them may understate what real users see.
+  - Capital letters in the human set are kept as typed. CER and Terrier ignore case, but the e5 tokenizer does not, so Phase 4 decides one case rule for all query sets. The same check showed that Terrier's default pipeline stems Latin-script words in the English way (`roy` → `roi`), also a Phase 4 decision.

@@ -48,8 +48,8 @@ This project **reproduces that script gap** and **builds and compares methods th
 | Starting dense model | `intfloat/multilingual-e5-base` (main); `-small` for quick debugging runs; `BAAI/bge-m3` off-the-shelf only, as a reference point to the paper (it does not fit fine-tuning in 8 GB) | decided (Phase 1) |
 | Vector search | exact search over cached embeddings (NumPy / torch); FAISS only if needed | decided |
 | Back-transliteration (Latin → native) | IndicXlit (AI4Bharat); fallback: WSL or an HF seq2seq model | confirm in Phase 5 |
-| Rule-based romanization | `indic_transliteration` (ITRANS / ISO) | decided |
-| Natural romanization | a transliteration model or an LLM, outputs frozen to files | confirm in Phase 3 |
+| Rule-based romanization | `uroman`, the reference paper's romanizer, called as in the paper's code; `indic_transliteration` (ITRANS / ISO) stays available | decided (Phase 3) |
+| Natural romanization | Gemini API via `google-genai`, run once at temperature 0, outputs frozen to files | decided (Phase 3) |
 | Evaluation | `ir_measures` (metrics), `ranx` (fusion + significance tests) | decided |
 | Data handling | pandas | decided |
 | Configs | YAML files in `configs/` (PyYAML) | decided |
@@ -68,6 +68,7 @@ This project **reproduces that script gap** and **builds and compares methods th
 data/                 raw + processed corpora, queries, qrels (git-ignored)
   raw/
   processed/
+  romanized/          romanized query sets (versioned: small, partly impossible to regenerate)
 src/
   data/               loading, splits, romanization, back-transliteration, normalization
   retrieval/          bm25, dense, dual index, fusion
@@ -97,7 +98,7 @@ docs/
 - All written documentation lives under `docs/`. When a phase needs a new document, add it there and update this tree and the one in `docs/plans/00-overview.md`.
 - `src/` code is importable modules; `scripts/` and notebooks call into `src/`, never the other way around.
 - Everything runs from the repo root and imports from `src` as a package (`from src.utils.seed import set_seed`): scripts as `python -m scripts.<name>`, tests as `python -m pytest`. No install step is needed.
-- Empty folders that must exist in a fresh clone hold a `.gitkeep` placeholder; `data/` and `models/` are created locally and never committed.
+- Empty folders that must exist in a fresh clone hold a `.gitkeep` placeholder; `data/` and `models/` are created locally and never committed, except `data/romanized/` (see §5.3).
 
 ---
 
@@ -118,16 +119,16 @@ All statistics (documents, queries, judgments, lengths) are **computed from the 
 - If a collection has only one labeled split with public qrels, tune/test are carved from it with a **fixed seed**, recorded in the data card.
 
 ### 5.3 Query sets
-Every query set contains the **same query IDs** as the native set:
+Every romanized query set contains the **same query IDs** as the native set of its split (`{split}` is `tune`, `test` or `train`):
 
-| File (`data/processed/`) | Content |
+| File | Content |
 |---|---|
-| `queries_native.tsv` | original native-script queries |
-| `queries_roman_natural.tsv` | casual "Hinglish"-style romanization (main condition) |
-| `queries_roman_rule.tsv` | deterministic ITRANS/ISO romanization (contrast) |
-| `queries_roman_human_a.tsv`, `queries_roman_human_b.tsv` | ~50–100 test queries romanized by hand, as two independent versions (A and B) |
+| `data/processed/{split}_queries.tsv` | original native-script queries (Phase 2) |
+| `data/romanized/{split}_queries_roman_natural.tsv` | casual "Hinglish"-style romanization by an LLM (main condition) |
+| `data/romanized/{split}_queries_roman_rule.tsv` | deterministic Uroman romanization, as in the reference paper (contrast) |
+| `data/romanized/test_queries_roman_human_a.tsv` | 50 test queries romanized by hand (one version, A) |
 
-Generated query sets are produced once and **frozen**; regeneration only on purpose, with a new file name.
+Romanized query sets are produced once and **frozen**: the scripts refuse to overwrite them, and regeneration happens only on purpose. Because the LLM output and the hand-typed sets cannot be regenerated exactly, `data/romanized/` is the one data folder kept in git (about 0.2 MB of text; MIRACL is Apache-2.0).
 
 ### 5.4 File formats
 - Queries: TSV, `qid<TAB>text`, UTF-8, no header.

@@ -1,8 +1,9 @@
 # Progress
 
 ## Current phase
-**Phase 2 — Data** (plan: docs/plans/02-data.md), on branch `phase-2/data`. Phase 1 is
-done (review gate approved 2026-11-06).
+**Phase 4 — Baselines & eval harness** (plan: docs/plans/04-baselines.md); not started.
+Phase 3 is done (review gate approved 2026-11-08) on branch `phase-3/romanized-queries`,
+not merged yet.
 
 ## Completed
 - [x] Project brief and conventions in CLAUDE.md
@@ -53,13 +54,31 @@ done (review gate approved 2026-11-06).
   a text duplicate of a test query; `scripts/data_stats.py` fills the statistics in
   docs/data/data_card_hi.md; `scripts/sample_queries.py` writes 20 tune queries with
   their relevant passages to `data/processed/sample_hi.md`
+- [x] Phase 2 merged into `main` (2026-11-06)
+- [x] Phase 2 review gate approved (2026-11-07): MIRACL-hi is a good fit and 250 test
+  queries are enough; limits recorded in docs/plans/02-data.md
+- [x] Phase 3 tasks 1–4, code (2026-11-07): `src/data/romanize.py` (Uroman, Gemini
+  wrapper, edit distance, CER), `scripts/romanize_queries.py`,
+  `scripts/human_romanization.py`, `scripts/romanization_quality.py`,
+  `configs/romanize_hi.yaml`, `.env` loading; 30 new tests (56 in total), ruff clean
+- [x] Phase 3 rule-based set (2026-11-07): Uroman files for tune/test/train written to
+  `data/romanized/` and frozen; the hand-romanization sheet (50 test queries) made
+- [x] Phase 3 natural set (2026-11-07): Gemini (`gemini-3.5-flash`, answered by
+  `gemini-3.6-flash`) romanized all 1,518 queries over two days (free-tier quota);
+  files for tune/test/train frozen in `data/romanized/`; sanity checks and the 30-query
+  review file from `scripts/romanization_quality.py`
+- [x] Phase 3 hand-romanized set (2026-11-08): 50 test queries typed once (version A),
+  frozen in `data/romanized/test_queries_roman_human_a.tsv`; CER against it: natural
+  0.096, rule 0.236; "What we found" filled in docs/plans/03-romanized-queries.md
+- [x] Phase 3 review gate approved (2026-11-08): the natural set is the main condition;
+  points carried forward are listed in docs/plans/03-romanized-queries.md
 
 ## In progress
-- Phase 2 — Data: review gate pending
+- (none)
 
 ## Next up
-- Phase 2 review gate: read docs/data/data_card_hi.md and `data/processed/sample_hi.md`;
-  is MIRACL-hi a good fit?
+- Commit and merge Phase 3, then Phase 4 — Baselines & eval harness: agree on the task
+  list and files (open decisions for Phase 4 are listed below)
 
 ## Open decisions / questions
 - Languages → decided: Hindi core, Gujarati as a separate droppable phase (Phase 10,
@@ -89,10 +108,30 @@ done (review gate approved 2026-11-06).
   repo; `data/processed/` holds our own split files
 - Train/test leakage → decided: train queries that repeat a tune/test query (same id or
   same normalized text) are dropped from train, so the evaluation splits stay intact
+- Query case → open, decide in Phase 4: Terrier lower-cases queries and documents itself,
+  but the e5 tokenizer is case-sensitive (`Raja` and `raja` become different tokens), and
+  the human set keeps the capitals as typed. Candidate: lower-case every query set the same
+  way before dense retrieval (a fixed preprocessing step, not tuned on test)
+- Terrier stemming and stopwords → open, decide in Phase 4: the default pipeline applies the
+  English Porter stemmer to Latin-script words (`roy` was indexed as `roi`); for romanized
+  Hindi it should probably be switched off (`stemmer=None, stopwords=None`), for every run
+- Shallow judgments → open: about 10 judged passages per query, so report Judged@10
+  (`ir_measures`) next to the main metrics in Phase 4; decide there
 - Phase 7 query length → open: train queries reach 41 e5 tokens, so the 32-token query
   length from the Phase 1 benchmark is too short; plan for about 48 in Phase 7
-- Natural romanization tool → open: decide in Phase 3. The paper romanized with Uroman
-  (rule-based); candidate for our rule-based condition
+- Natural romanization → decided: Gemini API (`google-genai`), fixed prompt, temperature 0,
+  output frozen (IndicXlit ruled out: Phase 5 uses it to undo romanization)
+- Rule-based romanization → decided: Uroman, called as in the paper's code (`lang=hin`,
+  raw text), instead of ITRANS/ISO
+- Hand-romanized set → decided: 50 test queries (seed 42), one version (A); version B
+  dropped, so no human-vs-human CER
+- Secrets → decided: API keys go in a git-ignored `.env` at the repo root, read by
+  `load_env_file()` in src/utils/config.py (conda env variables only apply after
+  `conda activate`, which direct calls to the env's python skip)
+- Known LLM errors → decided: kept in the frozen natural set, not hand-corrected (2 inserted
+  words and 1 dropped word found in 1,518 queries; listed in docs/plans/03)
+- Romanized files in git → decided: `data/romanized/` is versioned (small text; the LLM
+  and hand-typed sets cannot be regenerated exactly); the rest of `data/` stays ignored
 - Starting dense model → decided: multilingual-e5-base as the main model (fine-tunes in
   ~5.3 GB, leaving headroom), e5-small for quick debugging runs, BGE-M3 off-the-shelf
   only as a reference point to the paper (its fine-tuning step needs 10.6 GB, more than
@@ -117,6 +156,8 @@ done (review gate approved 2026-11-06).
 - Demo stack → open: Streamlit or Gradio; decide in Phase 11
 
 ## Known issues
+- Gemini free tier allows only 20 requests per day per model (found 2026-11-07); with
+  25 queries per request the natural set needs 61 requests
 - GitHub ruleset `protect-main` exists but is NOT enforced: rulesets on a private repo
   need a paid plan (GitHub Pro via the Student Developer Pack, or a public repo)
 - **Terrier tokeniser drops Devanagari by default** (found 2026-11-06): the default

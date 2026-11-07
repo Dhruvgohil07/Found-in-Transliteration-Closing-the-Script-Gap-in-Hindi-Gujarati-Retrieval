@@ -1,6 +1,6 @@
 # Phase 2 — Data
 
-**Status:** In review · **Days:** 1–2
+**Status:** Done · **Days:** 1–2
 
 ## Goal
 Load a native-script Hindi test collection (documents, queries, relevance judgments), verify its real statistics, and create clean, fixed splits for tuning, testing and training.
@@ -65,3 +65,9 @@ Load a native-script Hindi test collection (documents, queries, relevance judgme
 - Collection: MIRACL-hi (task 1 note). Split: 100 tune / 250 test from dev, seed 42.
 - Train queries that repeat a tune/test query (by id or normalized text) are dropped from train.
 - Raw data stays in the ir_datasets cache; `data/processed/` holds our split files.
+
+**Review gate (approved 2026-11-07)**
+- The data card and the 20 sampled tune queries were reviewed; the queries and their relevant passages look sensible.
+- MIRACL-hi is a good fit. 250 test queries are enough to measure the script gap, which the paper reports as large. Two limits to keep in mind:
+  - Small differences between methods may not be significant after the Bonferroni correction, so they are reported as such, not as wins.
+  - About 10 judged passages per query is shallow, so a method that finds new passages can be scored as if they were non-relevant. Phase 4 should report the share of judged passages in the top 10 (Judged@10, available in `ir_measures`) next to the main metrics.

@@ -43,6 +43,10 @@ versions of the same queries the **"script gap"** (§1).
   PyTerrier's Anserini interface, footnote 3) gave **inconsistent results** between BGE-M3 and mT5.
   The main results therefore use **non-tokenised** queries, and tokenisation is left for future
   work (§4.1, §4.2).
+- **In the code (checked 2026-11-07, `transliterate.py` in the repository of footnote 1):** a
+  `uroman.Uroman()` romanizer is called as `romanize_string(text, lang=lang)` with the ISO 639-3
+  language code, on the raw query text; the tokenisation lines are commented out. The README
+  installs it with `pip install uroman` and names no version.
 
 ## 4. Models, training and baselines (§3, §4)
 
@@ -147,11 +151,11 @@ These details would be needed for an exact reproduction but are not in the paper
 - Fine-tuning hyperparameters: learning rate, batch size, epochs, loss, negatives, temperature.
 - How many training queries were used, and how the 50/50 split was sampled.
 - The mT5 checkpoint and the reranking depth (how many BGE-M3 results mT5 rescores).
-- The Uroman version and options.
+- The Uroman version (the options are now known, see §3).
 - The significance test used, and its α.
 
-The code repository (footnote 1) may contain some of these. We have not checked it, so we assume
-none of them.
+The code repository (footnote 1) may contain some of these. It has been checked only for the
+Uroman call (Phase 3); for the rest we assume nothing until the phase that needs them.
 
 ## 8. How this maps to our project (ours, for the review gate)
 
@@ -159,7 +163,7 @@ none of them.
 |---|---|---|---|
 | Languages | Chinese, Russian | Hindi (core), Gujarati (Phase 10) | Hindi in Devanagari is closer to the Chinese case: no shared letters with Latin |
 | Collection | mMARCO/v2 + neuCLIR | MIRACL-hi (candidate) | Open question: does mMARCO/v2 have Hindi? (Phase 2) |
-| Romanized queries | Uroman, rule-based, machine-generated | natural "Hinglish" (main) + rule-based (contrast) + small hand-made set | Uroman is a candidate for our rule-based set (Phase 3) |
+| Romanized queries | Uroman, rule-based, machine-generated | natural "Hinglish" (main) + rule-based (contrast) + small hand-made set | **Decided in Phase 3:** our rule-based set is Uroman, called as in the paper's code |
 | Lexical baseline | none | BM25 native + romanized (Phase 4) | We add what the paper leaves out |
 | Dense model | BGE-M3 (single-vector) | multilingual-e5-base (main), -small for debugging | **Decided in Phase 1:** BGE-M3 needs more than 8 GB to fine-tune, so we use it off-the-shelf only, as a reference point |
 | Reranker | mT5 | none planned | Out of scope unless time allows |
