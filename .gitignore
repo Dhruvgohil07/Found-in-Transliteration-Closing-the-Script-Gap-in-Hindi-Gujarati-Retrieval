@@ -5,7 +5,11 @@
 /papers/
 
 # --- Data: corpora, queries, qrels, indexes (rebuilt by scripts; see the data cards) ---
-/data/
+# "/data/*" (not "/data/") so one folder can be re-included: data/romanized/ holds
+# the romanized query files, which are small and partly impossible to regenerate
+# (LLM output, hand-typed queries), so they are versioned.
+/data/*
+!/data/romanized/
 
 # --- Models and large artefacts (rebuilt from configs) ---
 /models/
