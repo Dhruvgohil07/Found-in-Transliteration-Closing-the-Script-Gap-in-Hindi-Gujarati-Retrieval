@@ -1,0 +1,22 @@
+# Phase 5 step 1: IndicXlit candidates for every romanized word (docs/plans/05-query-backtranslit.md).
+# Run: python -m scripts.backtranslit_candidates --config configs/backtranslit_candidates_hi.yaml
+# (needs Docker Desktop running and the image: docker build -t script-gap-indicxlit docker/indicxlit)
+experiment: backtranslit_candidates_hi
+lang: hi
+seed: 42                      # beam search is deterministic; kept for the config convention
+
+query_files:                  # every romanized set that gets back-transliterated (tune + test)
+  - data/romanized/tune_queries_roman_natural.tsv
+  - data/romanized/test_queries_roman_natural.tsv
+  - data/romanized/tune_queries_roman_rule.tsv
+  - data/romanized/test_queries_roman_rule.tsv
+  - data/romanized/test_queries_roman_human_a.tsv
+
+docker_image: script-gap-indicxlit
+model_cache: data/xlit_cache  # IndicXlit model + word-frequency dictionaries (git-ignored)
+beam_width: 10                # candidates per word; k in {1, 3, 5} is chosen later on tune
+chunk: 64                     # words per IndicXlit batch
+
+words_file: data/backtranslit/words_hi.txt            # input word list (one per line)
+candidates_file: data/backtranslit/candidates_hi.tsv  # frozen output (versioned)
+meta_file: data/backtranslit/candidates_hi_meta.json

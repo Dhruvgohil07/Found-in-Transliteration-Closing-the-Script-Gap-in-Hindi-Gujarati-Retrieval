@@ -63,3 +63,16 @@ def gap_rows(native: pd.DataFrame, romanized: dict[str, pd.DataFrame], metrics: 
                 significant=bonferroni_significant(result.p, len(romanized), alpha),
             ))
     return rows
+
+
+def gap_recovered(native: float, roman: float, method: float) -> float:
+    """Share of the native-vs-romanized gap that a method closes (SPECS §7.2):
+
+        GapRecovered = (M_method - M_roman) / (M_native - M_roman)
+
+    0 means no improvement over the romanized baseline, 1 (100%) means the
+    method reaches native effectiveness, above 1 means it beats native.
+    NaN if there is no gap to close.
+    """
+    gap = native - roman
+    return (method - roman) / gap if gap else float("nan")

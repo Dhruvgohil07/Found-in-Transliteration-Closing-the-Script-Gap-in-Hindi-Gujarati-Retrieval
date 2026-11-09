@@ -1,0 +1,24 @@
+# Phase 5 step 5: does keeping English words in Latin help? Compared on TUNE only.
+# Run: python -m scripts.tune_backtranslit_english --config configs/tune_backtranslit_english_hi.yaml
+experiment: tune_backtranslit_english_hi
+phase: 5
+lang: hi
+seed: 42
+
+bm25_config: configs/backtranslit_topk_bm25.yaml   # BM25 with weighted top-k queries (k from its config)
+dense_config: configs/baseline_dense.yaml          # e5-base with top-1 queries
+candidates_file: data/backtranslit/candidates_hi.tsv
+english_file: data/backtranslit/english_words_hi.txt
+
+split: tune
+qrels: data/processed/tune_qrels.tsv
+query_sets:
+  roman_natural: data/romanized/tune_queries_roman_natural.tsv
+  roman_rule: data/romanized/tune_queries_roman_rule.tsv
+
+# none: English words are back-transliterated like any word (the step 3-4 runs);
+# replace: they stay in Latin (the plan's rule); both: Latin word + its candidates, half each.
+english_modes: [none, replace, both]
+metrics_tested: [ndcg@10, recall@100]   # paired t-test of each mode against "none"
+
+output: results/tuning/tune_backtranslit_english_hi.csv

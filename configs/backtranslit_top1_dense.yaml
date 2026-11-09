@@ -1,0 +1,32 @@
+# Phase 5: dense e5-base (the Phase 4 baseline settings and corpus cache) with top-1
+# back-transliterated queries. Run: python -m scripts.run_baseline --config configs/backtranslit_top1_dense.yaml
+experiment: backtranslit_top1_dense_hi
+phase: 5
+lang: hi
+seed: 42
+method: e5base                # run names: hi_e5base_{query_set}_{split}
+
+model: intfloat/multilingual-e5-base   # main dense model (Phase 1), not fine-tuned
+fp16: true
+
+# Corpus encoding (step 1), cached and git-ignored
+dataset: miracl/hi            # 506,264 passages, title + text (src.data.load.full_text)
+embeddings_dir: data/embeddings/hi_e5base
+passage_max_length: 256       # tokens; same as the Phase 7 fine-tuning plan (cuts 7.7% of passages)
+shard_size: 50000             # passages per cached shard; an interrupted encoding resumes
+batch_size: 64
+
+# Queries: "query: " prefix, text as typed (no lower-casing; decided in Phase 4)
+query_max_length: 64          # the longest query is 41 e5 tokens
+top_k: 1000
+
+splits: [tune, test]
+qrels: data/processed/{split}_qrels.tsv
+query_sets:                   # top-1 back-transliterated (scripts/build_backtranslit_queries.py)
+  roman_natural_bt1: data/processed/{split}_queries_roman_natural_bt1.tsv
+  roman_rule_bt1: data/processed/{split}_queries_roman_rule_bt1.tsv
+  roman_human_bt1: data/processed/{split}_queries_roman_human_bt1.tsv   # test only (50 queries)
+
+output:
+  run_dir: results/runs
+  per_query_dir: results/per_query

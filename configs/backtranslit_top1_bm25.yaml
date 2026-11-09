@@ -1,0 +1,25 @@
+# Phase 5: BM25 (the Phase 4 baseline settings) with top-1 back-transliterated queries
+# (docs/plans/05-query-backtranslit.md). Run: python -m scripts.run_baseline --config configs/backtranslit_top1_bm25.yaml
+experiment: backtranslit_top1_bm25_hi
+phase: 5
+lang: hi
+seed: 42                      # BM25 is deterministic; kept for the config convention
+method: bm25                  # run names: hi_bm25_{query_set}_{split}
+
+index_dir: data/indexes/hi_native   # built by configs/index_bm25_hi.yaml
+bm25:
+  k1: 1.2                     # tuned on tune by configs/tune_bm25_hi.yaml (nDCG@10)
+  b: 0.3                      # (Terrier's defaults are k1=1.2, b=0.75)
+  floor_idf: true             # drop query terms in > half the passages (IDF floored at 0)
+top_k: 1000
+
+splits: [tune, test]          # tune: reference for later tuning; test: reported numbers
+qrels: data/processed/{split}_qrels.tsv
+query_sets:                   # top-1 back-transliterated (scripts/build_backtranslit_queries.py)
+  roman_natural_bt1: data/processed/{split}_queries_roman_natural_bt1.tsv
+  roman_rule_bt1: data/processed/{split}_queries_roman_rule_bt1.tsv
+  roman_human_bt1: data/processed/{split}_queries_roman_human_bt1.tsv   # test only (50 queries)
+
+output:
+  run_dir: results/runs
+  per_query_dir: results/per_query

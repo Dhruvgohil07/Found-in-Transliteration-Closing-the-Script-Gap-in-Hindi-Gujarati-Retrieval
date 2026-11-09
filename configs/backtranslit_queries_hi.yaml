@@ -1,0 +1,16 @@
+# Phase 5 step 2: top-1 back-transliterated query files, built from the frozen candidates.
+# Run: python -m scripts.build_backtranslit_queries --config configs/backtranslit_queries_hi.yaml
+experiment: backtranslit_queries_hi
+lang: hi
+seed: 42
+
+candidates_file: data/backtranslit/candidates_hi.tsv
+splits: [tune, test]
+query_sets:                   # romanized set -> its file; a set missing for a split is skipped
+  roman_natural: data/romanized/{split}_queries_roman_natural.tsv
+  roman_rule: data/romanized/{split}_queries_roman_rule.tsv
+  roman_human: data/romanized/{split}_queries_roman_human_a.tsv
+
+# One file per split and set, e.g. data/processed/test_queries_roman_natural_bt1.tsv
+# (derived from the frozen candidates, so git-ignored and rebuilt by this script).
+output: data/processed/{split}_queries_{query_set}_bt1.tsv

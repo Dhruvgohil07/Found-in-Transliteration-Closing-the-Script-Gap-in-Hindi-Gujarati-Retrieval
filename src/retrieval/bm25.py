@@ -152,3 +152,59 @@ def negative_idf_terms(index, terms: set[str]) -> set[str]:
         if entry is not None and entry.getDocumentFrequency() > n_docs / 2:
             common.add(term)
     return common
+
+
+WeightedQueries = dict[str, dict[str, float]]  # {qid: {term: weight}}
+
+
+def retrieve_weighted(
+    index,
+    queries: WeightedQueries,
+    *,
+    k1: float,
+    b: float,
+    top_k: int = DEFAULT_TOP_K,
+    tokeniser: str = "utf",
+    floor_idf: bool = False,
+) -> Run:
+    """BM25 search with weighted query terms (Phase 5 top-k expansion).
+
+    Each term is first cut by the index tokeniser (so it matches the index and
+    contains no query-language operators), weights of identical tokens are
+    added, and the query is sent in Terrier's ``term^weight`` syntax. How
+    Terrier applies the weights (checked on the MIRACL-hi index): it divides
+    every weight by the largest one in the query, so only ratios matter, and
+    BM25 then scales the term's score by ``(k3 + 1) x / (k3 + x)`` with
+    ``k3 = 8``, where ``x`` is that relative weight; nearly linear, and the
+    order of the weights is always kept. (Terrier's other query language,
+    ``#combine``, cannot parse Devanagari.)
+    """
+    start_java()
+    terms = sorted({term for query in queries.values() for term in query})
+    tokenised = pt.rewrite.tokenise(tokeniser)(pd.DataFrame({"qid": terms, "query": terms}))
+    tokens_of = dict(zip(tokenised["qid"], tokenised["query"].str.split(), strict=True))
+
+    weighted: dict[str, dict[str, float]] = {}
+    for qid, query in queries.items():
+        merged: dict[str, float] = {}
+        for term, weight in query.items():
+            for token in tokens_of[term]:
+                merged[token] = merged.get(token, 0.0) + weight
+        weighted[qid] = merged
+    if floor_idf:
+        common = negative_idf_terms(index, {t for q in weighted.values() for t in q})
+        weighted = {qid: {t: w for t, w in q.items() if t not in common} for qid, q in weighted.items()}
+
+    topics = pd.DataFrame({
+        "qid": [qid for qid, q in weighted.items() if q],
+        "query": [" ".join(f"{t}^{w:.6f}" for t, w in sorted(q.items())) for q in weighted.values() if q],
+    })
+    if topics.empty:
+        return {}
+    retriever = pt.terrier.Retriever(index, wmodel="BM25", num_results=top_k,
+                                     controls={"bm25.k_1": str(k1), "bm25.b": str(b)})
+    results = retriever(topics)
+    run: Run = {}
+    for qid, docno, score in zip(results["qid"], results["docno"], results["score"], strict=True):
+        run.setdefault(qid, {})[docno] = float(score)
+    return run

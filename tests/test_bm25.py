@@ -123,3 +123,34 @@ def test_floor_idf_drops_terms_in_most_passages(tmp_path):
         assert list(floored) == ["target"]
     finally:
         index.close()
+
+
+def test_weighted_with_equal_weights_matches_plain_retrieval(search_index):
+    from src.retrieval.bm25 import retrieve_weighted
+
+    plain = retrieve(search_index, {"q": "brahmo samaj founder"}, k1=1.2, b=0.75)
+    weighted = retrieve_weighted(search_index, {"q": {"brahmo": 1.0, "samaj": 1.0, "founder": 1.0}},
+                                 k1=1.2, b=0.75)
+    assert weighted["q"] == pytest.approx(plain["q"])
+
+
+def test_weights_change_which_term_dominates(search_index):
+    from src.retrieval.bm25 import retrieve_weighted
+
+    # d1 matches only "roy" (once); d3 matches only "क्रिकेट" (the word for cricket)
+    favour_roy = retrieve_weighted(search_index, {"q": {"roy": 0.9, "क्रिकेट": 0.1}}, k1=1.2, b=0.75)
+    favour_cricket = retrieve_weighted(search_index, {"q": {"roy": 0.1, "क्रिकेट": 0.9}}, k1=1.2, b=0.75)
+    assert favour_roy["q"]["d1"] > favour_roy["q"]["d3"]
+    assert favour_cricket["q"]["d3"] > favour_cricket["q"]["d1"]
+    # only the ratio of the weights matters
+    scaled = retrieve_weighted(search_index, {"q": {"roy": 9.0, "क्रिकेट": 1.0}}, k1=1.2, b=0.75)
+    assert scaled["q"] == pytest.approx(favour_roy["q"])
+
+
+def test_weighted_terms_are_tokenised_and_merged(search_index):
+    from src.retrieval.bm25 import retrieve_weighted
+
+    # "Brahmo-Samaj!" is cut into brahmo + samaj; "BRAHMO" merges with brahmo
+    a = retrieve_weighted(search_index, {"q": {"Brahmo-Samaj!": 0.5, "BRAHMO": 0.5}}, k1=1.2, b=0.75)
+    b = retrieve_weighted(search_index, {"q": {"brahmo": 1.0, "samaj": 0.5}}, k1=1.2, b=0.75)
+    assert a["q"] == pytest.approx(b["q"])

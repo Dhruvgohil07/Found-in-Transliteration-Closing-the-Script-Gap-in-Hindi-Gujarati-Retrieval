@@ -1,0 +1,17 @@
+# Phase 5 step 7: the 10 tune queries where top-1 back-transliteration loses most (BM25,
+# natural set, the main condition). Run: python -m scripts.backtranslit_failures --config configs/backtranslit_failures_hi.yaml
+experiment: backtranslit_failures_hi
+phase: 5
+lang: hi
+seed: 42
+
+split: tune
+metric: ndcg@10
+n: 10
+native_per_query: results/per_query/hi_bm25_native_tune.csv
+method_per_query: results/per_query/hi_bm25_roman_natural_bt1_tune.csv
+native_queries: data/processed/tune_queries.tsv
+romanized_queries: data/romanized/tune_queries_roman_natural.tsv
+backtranslit_queries: data/processed/tune_queries_roman_natural_bt1.tsv
+
+output: data/processed/backtranslit_failures_hi.md   # git-ignored working file
