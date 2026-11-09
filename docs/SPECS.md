@@ -43,7 +43,7 @@ This project **reproduces that script gap** and **builds and compares methods th
 | Language | Python 3.11, type hints on functions | decided |
 | Environment | conda env `script-gap` (Python 3.11 from conda-forge); packages installed with `pip` from a pinned `requirements.txt` | decided |
 | Datasets | `ir_datasets` | decided |
-| BM25 / indexing | PyTerrier (Terrier BM25, Java 17) | decided |
+| BM25 / indexing | PyTerrier (Terrier BM25, Java 17): `utf` tokeniser, no stemming or stopwords, IDF floored at 0, k1/b tuned on tune | decided (Phase 4) |
 | Dense retrieval | sentence-transformers + PyTorch (CUDA) | decided |
 | Starting dense model | `intfloat/multilingual-e5-base` (main); `-small` for quick debugging runs; `BAAI/bge-m3` off-the-shelf only, as a reference point to the paper (it does not fit fine-tuning in 8 GB) | decided (Phase 1) |
 | Vector search | exact search over cached embeddings (NumPy / torch); FAISS only if needed | decided |
@@ -79,7 +79,9 @@ scripts/              small entry-point scripts (e.g. environment check)
 tests/                pytest unit tests for pure functions in src/
 configs/              one YAML file per experiment
 results/
-  runs/               TREC run files
+  runs/               TREC run files (git-ignored: 1-17 MB each, rebuilt from their configs)
+  tuning/             parameter-search tables (tune split only)
+  tables/             generated result tables, e.g. the script-gap table (never edited by hand)
   per_query/          per-query metric CSVs
   figures/
   results.csv         one row per evaluated run
@@ -196,7 +198,9 @@ One row per evaluated run, appended by the evaluation code (never edited by hand
 | `split` | `test` |
 | `config` | `configs/baseline_bm25.yaml` |
 | `seed` | `42` |
+| `n_queries` | `250` (every query in the qrels; a query with no results scores 0) |
 | `ndcg@10`, `mrr@10`, `recall@100`, `recall@1000` | metric values |
+| `judged@10` | share of the top 10 that has a relevance judgment (diagnostic, not a quality metric) |
 | `run_file` | `results/runs/hi_bm25_roman_natural_test.trec` |
 
 ---
