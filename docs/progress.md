@@ -1,9 +1,9 @@
 # Progress
 
 ## Current phase
-**Phase 4 — Baselines & eval harness** (plan: docs/plans/04-baselines.md); not started.
-Phase 3 is done (review gate approved 2026-11-08) on branch `phase-3/romanized-queries`,
-not merged yet.
+**Phase 5 — Query-side back-transliteration** (plan: docs/plans/05-query-backtranslit.md);
+not started. Phase 4 is done (review gate approved 2026-11-09) on branch
+`phase-4/baselines`, not merged yet.
 
 ## Completed
 - [x] Project brief and conventions in CLAUDE.md
@@ -73,12 +73,35 @@ not merged yet.
 - [x] Phase 3 review gate approved (2026-11-08): the natural set is the main condition;
   points carried forward are listed in docs/plans/03-romanized-queries.md
 
+- [x] Phase 3 merged into `main` (2026-11-08)
+- [x] Phase 4 step 1 (2026-11-08): evaluation harness, `src/eval/evaluate.py` (ir_measures
+  metrics, per-query scores, results.csv rows) and `src/eval/significance.py` (paired t-test,
+  Bonferroni); 13 tests with hand-computed values (69 in total)
+- [x] Phase 4 step 2 (2026-11-09): BM25 index of all 506,264 passages (title + text, utf
+  tokeniser, no stemming, no stopwords; 213 MB, built in 3.8 min); 4 tests (73 in total)
+- [x] Phase 4 step 3 (2026-11-09): BM25 baseline runs on tune and test; queries tokenised
+  before search, IDF floored at 0 and k1 = 1.2, b = 0.3 tuned on tune; test native
+  nDCG@10 0.381 (MIRACL's published Lucene BM25: 0.458), all romanized sets ≈ 0
+- [x] Phase 4 step 4 (2026-11-09): dense baseline with multilingual-e5-base; corpus encoded
+  once (16.5 min, 778 MB cache); test native nDCG@10 0.607 (mE5 report: 58.4 on all of
+  dev), romanized 0.000-0.013; 5 tests (84 in total)
+- [x] Phase 4 step 5 (2026-11-09): script-gap table (`results/tables/gap_hi_test.md`);
+  nDCG@10 drops 99.5-100% for BM25 and 97.8-100% for dense, all significant after
+  Bonferroni; 4 tests (88 in total)
+- [x] Phase 4 step 6 (2026-11-09): reproducibility check passed for both baselines: BM25
+  with the index rebuilt from scratch and dense with a re-encoded shard give byte-identical
+  run files and identical per-query scores (`scripts/check_reproducibility.py`)
+- [x] Phase 4 step 7 (2026-11-09): "What we found" written: the script gap is 94.6-100%
+  for BM25 and 85.9-100% for dense on every metric, matching the paper's 97% MRR@10
+  drop for BGE-M3 on Chinese
+- [x] Phase 4 review gate approved (2026-11-09): gap visible and matching the paper's trend;
+  BM25 accepted below MIRACL's Lucene BM25 for documented reasons
 ## In progress
 - (none)
 
 ## Next up
-- Commit and merge Phase 3, then Phase 4 — Baselines & eval harness: agree on the task
-  list and files (open decisions for Phase 4 are listed below)
+- Commit and merge Phase 4, then Phase 5 — Query-side back-transliteration: agree on the
+  task list and files (IndicXlit on Windows is a known install risk)
 
 ## Open decisions / questions
 - Languages → decided: Hindi core, Gujarati as a separate droppable phase (Phase 10,
@@ -108,15 +131,14 @@ not merged yet.
   repo; `data/processed/` holds our own split files
 - Train/test leakage → decided: train queries that repeat a tune/test query (same id or
   same normalized text) are dropped from train, so the evaluation splits stay intact
-- Query case → open, decide in Phase 4: Terrier lower-cases queries and documents itself,
-  but the e5 tokenizer is case-sensitive (`Raja` and `raja` become different tokens), and
-  the human set keeps the capitals as typed. Candidate: lower-case every query set the same
-  way before dense retrieval (a fixed preprocessing step, not tuned on test)
-- Terrier stemming and stopwords → open, decide in Phase 4: the default pipeline applies the
-  English Porter stemmer to Latin-script words (`roy` was indexed as `roi`); for romanized
-  Hindi it should probably be switched off (`stemmer=None, stopwords=None`), for every run
-- Shallow judgments → open: about 10 judged passages per query, so report Judged@10
-  (`ir_measures`) next to the main metrics in Phase 4; decide there
+- Query case → decided: queries go to the dense model as typed (off-the-shelf baseline =
+  model + raw query); normalization is left to later methods, where it can be tested
+- mE5 and MIRACL → note: multilingual-e5 was fine-tuned on MIRACL (mE5 report, Table 2),
+  so the native dense baseline is in-domain; for Phase 7 only the romanized training
+  queries are new to the model
+- Terrier stemming and stopwords → decided: both off for every index and run (the English
+  defaults change romanized Hindi, `roy` -> `roi`, and do nothing for Devanagari)
+- Shallow judgments → decided: Judged@10 is logged with every run as a diagnostic
 - Phase 7 query length → open: train queries reach 41 e5 tokens, so the 32-token query
   length from the Phase 1 benchmark is too short; plan for about 48 in Phase 7
 - Natural romanization → decided: Gemini API (`google-genai`), fixed prompt, temperature 0,
@@ -150,12 +172,18 @@ not merged yet.
 - Back-transliteration tool → open: IndicXlit first, fallback decided at the start of
   Phase 5
 - Gujarati collection → open: decide in Phase 10
-- Run files in git → open: `results/runs/*.trec` are currently tracked (text, and they
-  back every number in results.csv); runs are now 1000 deep, so they are 10× larger than
-  first planned. Check their real size in Phase 4 and decide then
+- Run files in git → decided: `results/runs/*.trec` are git-ignored (1-17 MB each, rebuilt
+  from their configs); `results/results.csv` and `results/per_query/*.csv` are versioned
+- BM25 setup → decided: queries tokenised with the index tokeniser, IDF floored at 0
+  (terms in > half the passages dropped), k1 = 1.2 and b = 0.3 tuned on tune
+- Hindi normalization for BM25 → open: our BM25 (test nDCG@10 0.381) is below MIRACL's
+  Lucene BM25 with the Hindi analyzer (0.458); a possible later improvement
 - Demo stack → open: Streamlit or Gradio; decide in Phase 11
 
 ## Known issues
+- pytest prints "Windows fatal exception: access violation" stack dumps when a test starts
+  Java (found 2026-11-09): the JVM raises and handles these itself and pytest's faulthandler
+  reports them; the tests still pass. Harmless; faulthandler is left on to catch real crashes
 - Gemini free tier allows only 20 requests per day per model (found 2026-11-07); with
   25 queries per request the natural set needs 61 requests
 - GitHub ruleset `protect-main` exists but is NOT enforced: rulesets on a private repo
