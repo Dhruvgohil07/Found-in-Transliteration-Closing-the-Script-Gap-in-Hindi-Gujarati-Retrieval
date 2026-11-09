@@ -1,0 +1,18 @@
+# Phase 4: the script-gap table (native vs romanized queries) for the baselines.
+# Run: python -m scripts.gap_table --config configs/gap_table_hi.yaml
+experiment: gap_table_hi
+phase: 4
+lang: hi
+seed: 42
+
+split: test
+methods:                      # the "method" of each baseline config
+  bm25: BM25 (configs/baseline_bm25.yaml)
+  e5base: Dense, multilingual-e5-base (configs/baseline_dense.yaml)
+native: native
+romanized: [roman_natural, roman_rule, roman_human]
+metrics: [ndcg@10, mrr@10, recall@100, recall@1000]
+alpha: 0.05                   # Bonferroni: p < alpha / 3 (three romanized sets per native run)
+
+per_query_dir: results/per_query
+output: results/tables/gap_hi_test.md   # generated, never edited by hand
