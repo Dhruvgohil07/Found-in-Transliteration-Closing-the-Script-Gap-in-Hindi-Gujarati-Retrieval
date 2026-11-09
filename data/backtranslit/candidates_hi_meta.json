@@ -1,0 +1,10 @@
+{
+  "tool": "ai4bharat-transliteration==1.1.3 (IndicXlit v1.0, en->indic transformer)",
+  "lang": "hi",
+  "beam_width": 10,
+  "rescore": true,
+  "alpha": 0.9,
+  "words": 2441,
+  "ranking_mismatches_vs_indicxlit": 0,
+  "seconds": 46.9
+}

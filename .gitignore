@@ -10,6 +10,9 @@
 # (LLM output, hand-typed queries), so they are versioned.
 /data/*
 !/data/romanized/
+# data/backtranslit/ holds the frozen IndicXlit candidates (Phase 5), which can only be
+# regenerated with the Docker image, so it is versioned too.
+!/data/backtranslit/
 
 # --- Models and large artefacts (rebuilt from configs) ---
 /models/
