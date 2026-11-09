@@ -1,0 +1,30 @@
+# Phase 5: BM25 with weighted top-k back-transliterated queries (docs/plans/05-query-backtranslit.md).
+# Run: python -m scripts.run_baseline --config configs/backtranslit_topk_bm25.yaml
+experiment: backtranslit_topk_bm25_hi
+phase: 5
+lang: hi
+seed: 42                      # BM25 is deterministic; kept for the config convention
+method: bm25_bt5              # run names: hi_bm25_bt5_{query_set}_{split}
+
+index_dir: data/indexes/hi_native   # the Phase 4 BM25 baseline settings
+bm25:
+  k1: 1.2
+  b: 0.3
+  floor_idf: true
+top_k: 1000
+
+backtranslit:
+  candidates_file: data/backtranslit/candidates_hi.tsv
+  k: 5                        # chosen on tune by configs/tune_backtranslit_k_hi.yaml: tied with k = 10
+                              # on nDCG@10 (not significant), better recall, fewer terms
+
+splits: [tune, test]
+qrels: data/processed/{split}_qrels.tsv
+query_sets:                   # romanized queries: the searcher builds the weighted queries itself
+  roman_natural: data/romanized/{split}_queries_roman_natural.tsv
+  roman_rule: data/romanized/{split}_queries_roman_rule.tsv
+  roman_human: data/romanized/{split}_queries_roman_human_a.tsv   # test only (50 queries)
+
+output:
+  run_dir: results/runs
+  per_query_dir: results/per_query

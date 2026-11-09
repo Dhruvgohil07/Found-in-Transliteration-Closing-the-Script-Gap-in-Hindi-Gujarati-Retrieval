@@ -47,6 +47,24 @@ def bm25_searcher(cfg: dict) -> Searcher:
     return search
 
 
+def bm25_backtranslit_searcher(cfg: dict) -> Searcher:
+    """BM25 with weighted top-k back-transliterated queries (Phase 5): each romanized
+    query becomes ``src.data.backtranslit.weighted_query`` with ``backtranslit.k``."""
+    from src.data.backtranslit import load_candidates, weighted_query
+    from src.retrieval.bm25 import open_index, retrieve_weighted
+
+    index = open_index(resolve_path(cfg["index_dir"]))
+    params, k = cfg["bm25"], cfg["backtranslit"]["k"]
+    candidates = load_candidates(resolve_path(cfg["backtranslit"]["candidates_file"]))
+
+    def search(queries: Queries) -> Run:
+        weighted = {qid: weighted_query(text, candidates, k) for qid, text in queries.items()}
+        return retrieve_weighted(index, weighted, k1=params["k1"], b=params["b"],
+                                 top_k=cfg["top_k"], floor_idf=params["floor_idf"])
+
+    return search
+
+
 def dense_searcher(cfg: dict) -> Searcher:
     import torch
 
@@ -69,6 +87,7 @@ SEARCHERS: dict[str, Callable[[dict], Searcher]] = {
     "bm25": bm25_searcher,
     "bm25_classic": bm25_searcher,
     "bm25_idf0": bm25_searcher,
+    "bm25_bt5": bm25_backtranslit_searcher,
 }
 
 

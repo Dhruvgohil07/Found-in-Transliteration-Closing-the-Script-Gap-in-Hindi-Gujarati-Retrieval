@@ -1,0 +1,21 @@
+# Phase 5 step 5: which romanized query words count as English (frozen list).
+# Run: python -m scripts.backtranslit_english_words --config configs/backtranslit_english_hi.yaml
+experiment: backtranslit_english_hi
+lang: hi
+seed: 42
+
+# English word frequencies from IndicXlit v1.0 (word_prob_dicts_en.zip, 1.17 MB, GitHub
+# AI4Bharat/IndicXlit release v1.0), kept in the git-ignored model cache.
+english_dict: data/xlit_cache/en/word_prob_dicts_en.zip
+english_dict_member: word_prob_dicts/en_word_prob_dict.json
+
+# A word is English if it has at least min_length letters and its English frequency
+# (the highest of word, Word and WORD) is at least min_prob. Chosen from the tune word
+# list: every common Hinglish word is in the dictionary too, but below 1e-6 (hai 7.3e-7),
+# while loanwords are above 1e-5 (metro 1.5e-5); short words (the, to, is, do) are also
+# Hinglish words (थे, तो, इस, दो), so they never count as English.
+min_length: 4
+min_prob: 1.0e-5
+
+words_file: data/backtranslit/words_hi.txt             # all romanized words (step 1)
+output: data/backtranslit/english_words_hi.txt         # frozen, versioned

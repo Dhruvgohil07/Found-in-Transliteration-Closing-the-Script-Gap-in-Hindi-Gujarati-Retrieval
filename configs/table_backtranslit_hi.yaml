@@ -1,0 +1,28 @@
+# Phase 5: test-split table of the back-transliteration methods next to the Phase 4 baselines.
+# Run: python -m scripts.method_table --config configs/table_backtranslit_hi.yaml
+experiment: table_backtranslit_hi
+phase: 5
+lang: hi
+seed: 42
+
+split: test
+query_sets: [roman_natural, roman_rule, roman_human]
+metrics: [ndcg@10, mrr@10, recall@100, recall@1000]
+gap_metric: ndcg@10           # GapRecovered and the p-values are reported for this metric
+alpha: 0.05                   # Bonferroni over every method-vs-romanized comparison in the table
+
+per_query_dir: results/per_query
+groups:                       # run names without the split; {set} = the romanized query set
+  - label: BM25 (configs/baseline_bm25.yaml settings)
+    native: hi_bm25_native
+    romanized: hi_bm25_{set}
+    methods:
+      top-1 back-transliteration: hi_bm25_{set}_bt1
+      top-5 weighted back-transliteration: hi_bm25_bt5_{set}
+  - label: Dense multilingual-e5-base (configs/baseline_dense.yaml settings)
+    native: hi_e5base_native
+    romanized: hi_e5base_{set}
+    methods:
+      top-1 back-transliteration: hi_e5base_{set}_bt1
+
+output: results/tables/backtranslit_hi_test.md   # generated, never edited by hand

@@ -183,3 +183,12 @@ def test_gap_drop_is_nan_when_native_is_zero():
 
     row = GapRow("x", "m", 1, native=0.0, roman=0.0, p=1.0, significant=False)
     assert math.isnan(row.drop)
+
+
+def test_gap_recovered():
+    from src.eval.gap import gap_recovered
+
+    assert gap_recovered(native=0.4, roman=0.0, method=0.3) == pytest.approx(0.75)
+    assert gap_recovered(native=0.4, roman=0.1, method=0.1) == 0.0
+    assert gap_recovered(native=0.4, roman=0.0, method=0.5) == pytest.approx(1.25)  # beats native
+    assert math.isnan(gap_recovered(native=0.2, roman=0.2, method=0.3))
