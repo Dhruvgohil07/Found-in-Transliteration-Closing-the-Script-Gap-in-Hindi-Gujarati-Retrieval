@@ -47,7 +47,7 @@ This project **reproduces that script gap** and **builds and compares methods th
 | Dense retrieval | sentence-transformers + PyTorch (CUDA) | decided |
 | Starting dense model | `intfloat/multilingual-e5-base` (main); `-small` for quick debugging runs; `BAAI/bge-m3` off-the-shelf only, as a reference point to the paper (it does not fit fine-tuning in 8 GB) | decided (Phase 1) |
 | Vector search | exact search over cached embeddings (NumPy / torch); FAISS only if needed | decided |
-| Back-transliteration (Latin → native) | IndicXlit (AI4Bharat); fallback: WSL or an HF seq2seq model | confirm in Phase 5 |
+| Back-transliteration (Latin → native) | IndicXlit (AI4Bharat, `ai4bharat-transliteration` 1.1.3) in a Docker container (`docker/indicxlit/`, Python 3.8); run once, candidates frozen | decided (Phase 5) |
 | Rule-based romanization | `uroman`, the reference paper's romanizer, called as in the paper's code; `indic_transliteration` (ITRANS / ISO) stays available | decided (Phase 3) |
 | Natural romanization | Gemini API via `google-genai`, run once at temperature 0, outputs frozen to files | decided (Phase 3) |
 | Evaluation | `ir_measures` (metrics), `ranx` (fusion + significance tests) | decided |
@@ -69,6 +69,7 @@ data/                 raw + processed corpora, queries, qrels (git-ignored)
   raw/
   processed/
   romanized/          romanized query sets (versioned: small, partly impossible to regenerate)
+  backtranslit/       frozen IndicXlit candidates (versioned: regenerated only with the Docker image)
 src/
   data/               loading, splits, romanization, back-transliteration, normalization
   retrieval/          bm25, dense, dual index, fusion
@@ -88,6 +89,7 @@ results/
 models/               fine-tuned checkpoints (git-ignored)
 notebooks/            exploration and error analysis
 app/                  demo search UI
+docker/               container definitions for tools that do not run on Windows (IndicXlit)
 docs/
   SPECS.md            this file
   progress.md         where the project stands
