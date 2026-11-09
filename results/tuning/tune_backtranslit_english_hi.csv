@@ -1,0 +1,13 @@
+method,query_set,english_mode,ndcg@10,mrr@10,recall@100,recall@1000,judged@10
+bm25_bt,roman_natural,none,0.3656,0.3876,0.7658,0.9238,0.3090
+bm25_bt,roman_natural,replace,0.2455,0.2472,0.6340,0.8617,0.2180
+bm25_bt,roman_natural,both,0.3206,0.3436,0.7340,0.9043,0.2720
+e5base_bt1,roman_natural,none,0.5796,0.6227,0.8958,0.9840,0.3710
+e5base_bt1,roman_natural,replace,0.5532,0.5910,0.8711,0.9724,0.3560
+e5base_bt1,roman_natural,both,0.5671,0.6061,0.8750,0.9815,0.3610
+bm25_bt,roman_rule,none,0.3475,0.3715,0.7320,0.8679,0.3060
+bm25_bt,roman_rule,replace,0.3274,0.3428,0.7270,0.8654,0.2940
+bm25_bt,roman_rule,both,0.3435,0.3640,0.7295,0.8679,0.3000
+e5base_bt1,roman_rule,none,0.4988,0.5328,0.8576,0.9774,0.3200
+e5base_bt1,roman_rule,replace,0.5012,0.5341,0.8610,0.9774,0.3210
+e5base_bt1,roman_rule,both,0.4973,0.5278,0.8576,0.9774,0.3190
