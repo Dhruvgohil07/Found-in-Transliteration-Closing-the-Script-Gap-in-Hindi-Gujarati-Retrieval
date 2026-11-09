@@ -26,6 +26,10 @@
 indexes/
 **/index/
 
+# --- Run files: 1000-deep TREC runs are 1-17 MB each and rebuilt from their
+# configs; results.csv and results/per_query/*.csv (small) back every number ---
+/results/runs/*.trec
+
 # --- Secrets ---
 .env
 .env.*
