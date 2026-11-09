@@ -1,0 +1,14 @@
+# Phase 4: BM25 index of the native Hindi corpus (docs/plans/04-baselines.md).
+# Used by scripts/build_bm25_index.py; the BM25 runs read index_dir.
+experiment: index_bm25_hi
+lang: hi
+seed: 42                      # indexing is deterministic; kept for the config convention
+
+dataset: miracl/hi            # 506,264 passages (ir_datasets cache)
+text: title + text            # src.data.load.full_text: the article title is kept with the passage
+index_dir: data/indexes/hi_native   # git-ignored; rebuild with the script below
+
+tokeniser: utf                # keeps Devanagari (the default English tokeniser drops it)
+stemmer: none                 # no English Porter stemming of Latin-script words
+stopwords: none               # no English stopword list
+docno_length: 32              # bytes reserved per docno; longer ids raise an error

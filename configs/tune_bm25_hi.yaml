@@ -1,0 +1,21 @@
+# Phase 4: grid search of BM25 k1 and b on the TUNE split only (never test).
+# Run: python -m scripts.tune_bm25 --config configs/tune_bm25_hi.yaml
+experiment: tune_bm25_hi
+phase: 4
+lang: hi
+seed: 42
+
+index_dir: data/indexes/hi_native
+floor_idf: true               # the variant chosen as the BM25 baseline
+top_k: 1000
+
+split: tune
+queries: data/processed/tune_queries.tsv      # native: romanized queries score ~0 for any k1/b
+qrels: data/processed/tune_qrels.tsv
+metric: ndcg@10               # the main metric picks the best pair
+
+grid:
+  k1: [0.6, 0.9, 1.2, 1.5, 2.0]
+  b: [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.75, 0.9]   # 0.1 and 0.2 added: the first best (0.3) was at the grid edge
+
+output: results/tuning/tune_bm25_hi.csv   # one row per (k1, b) with all metrics

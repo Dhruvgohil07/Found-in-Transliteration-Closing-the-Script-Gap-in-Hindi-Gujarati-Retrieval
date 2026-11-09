@@ -1,0 +1,26 @@
+# Phase 4: BM25 with IDF floored at 0, default k1/b; compared with the classic IDF on tune only
+# (docs/plans/04-baselines.md). Run: python -m scripts.run_baseline --config configs/baseline_bm25_idf0.yaml
+experiment: baseline_bm25_idf0_hi
+phase: 4
+lang: hi
+seed: 42                      # BM25 is deterministic; kept for the config convention
+method: bm25_idf0             # run names: hi_bm25_idf0_{query_set}_{split}
+
+index_dir: data/indexes/hi_native   # built by configs/index_bm25_hi.yaml
+bm25:
+  k1: 1.2                     # Terrier's defaults, not tuned
+  b: 0.75
+  floor_idf: true             # drop query terms in > half the passages (IDF floored at 0)
+top_k: 1000
+
+splits: [tune]                # comparison on tune only (THE baseline: configs/baseline_bm25.yaml)
+qrels: data/processed/{split}_qrels.tsv
+query_sets:                   # a set whose file does not exist for a split is skipped
+  native: data/processed/{split}_queries.tsv
+  roman_natural: data/romanized/{split}_queries_roman_natural.tsv
+  roman_rule: data/romanized/{split}_queries_roman_rule.tsv
+  roman_human: data/romanized/{split}_queries_roman_human_a.tsv   # test only (50 queries)
+
+output:
+  run_dir: results/runs
+  per_query_dir: results/per_query
