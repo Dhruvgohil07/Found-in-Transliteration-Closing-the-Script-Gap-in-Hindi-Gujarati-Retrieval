@@ -1,9 +1,9 @@
 # Progress
 
 ## Current phase
-**Phase 5 — Query-side back-transliteration** (plan: docs/plans/05-query-backtranslit.md);
-not started. Phase 4 is done (review gate approved 2026-11-09) on branch
-`phase-4/baselines`, not merged yet.
+**Phase 6 — Doc-side romanization & normalization** (plan: docs/plans/06-doc-side-normalization.md);
+not started. Phase 5 is done (review gate approved 2026-11-09) on branch
+`phase-5/backtranslit`, not merged yet.
 
 ## Completed
 - [x] Project brief and conventions in CLAUDE.md
@@ -96,12 +96,37 @@ not started. Phase 4 is done (review gate approved 2026-11-09) on branch
   drop for BGE-M3 on Chinese
 - [x] Phase 4 review gate approved (2026-11-09): gap visible and matching the paper's trend;
   BM25 accepted below MIRACL's Lucene BM25 for documented reasons
+- [x] Phase 4 merged into `main` (2026-11-09)
+- [x] Phase 5 step 1 (2026-11-09): IndicXlit in a pinned Docker image; 10 scored candidates
+  for each of the 2,441 romanized words (tune + test), ranking identical to IndicXlit's,
+  frozen in `data/backtranslit/candidates_hi.tsv`; 3 tests (91 in total)
+- [x] Phase 5 step 2 (2026-11-09): top-1 and weighted top-k query builders
+  (`src/data/backtranslit.py`), top-1 query files for every romanized set on tune and test;
+  9 tests (97 in total)
+- [x] Phase 5 step 3 (2026-11-09): top-1 runs on tune: BM25 recovers 90.2% (natural) and
+  82.3% (rule) of the nDCG@10 gap, dense 101.3% and 87.1%; test runs deferred to step 6;
+  `gap_recovered` added (98 tests)
+- [x] Phase 5 step 4 (2026-11-09): weighted top-k BM25 (`retrieve_weighted`, Terrier
+  `term^weight`); k = 5 chosen on tune (tune nDCG@10 0.3656 natural, 0.3475 rule; the
+  significant gain is recall); 3 tests (101 in total)
+- [x] Phase 5 step 5 (2026-11-09): keeping English words in Latin tested on tune and
+  rejected (BM25 natural nDCG@10 −0.120, p < 0.001; keeping both scripts −0.045,
+  p = 0.003); 4 tests (105 in total)
+- [x] Phase 5 step 6 (2026-11-09): test results in `results/tables/backtranslit_hi_test.md`
+  (generic `scripts/method_table.py`): BM25 top-5 recovers 98.1% (natural), 88.3% (rule) and
+  84.0% (human) of the nDCG@10 gap, dense top-1 92.3%, 80.9% and 88.2%; all significant
+  against the romanized baselines after Bonferroni
+- [x] Phase 5 step 7 (2026-11-09): failure analysis of 10 tune queries (5 are valid
+  Devanagari spelling variants, e.g. आंख / आँख, both common in the corpus); "What we found"
+  written
+- [x] Phase 5 review gate approved (2026-11-09): back-transliteration recovers 81-98% of the
+  gap; remaining failures are mostly Devanagari spelling variants (input to Phase 6)
 ## In progress
 - (none)
 
 ## Next up
-- Commit and merge Phase 4, then Phase 5 — Query-side back-transliteration: agree on the
-  task list and files (IndicXlit on Windows is a known install risk)
+- Commit and merge Phase 5, then Phase 6 — Doc-side romanization & normalization: agree
+  on the task list and files (spelling-variant normalization is now a priority)
 
 ## Open decisions / questions
 - Languages → decided: Hindi core, Gujarati as a separate droppable phase (Phase 10,
@@ -150,6 +175,13 @@ not started. Phase 4 is done (review gate approved 2026-11-09) on branch
 - Secrets → decided: API keys go in a git-ignored `.env` at the repo root, read by
   `load_env_file()` in src/utils/config.py (conda env variables only apply after
   `conda activate`, which direct calls to the env's python skip)
+- Top-k expansion → decided: k = 5 candidates per word (tied with k = 10 on tune nDCG@10,
+  better recall, fewer terms)
+- English words in queries → decided: back-transliterated like any word; keeping them in
+  Latin (or in both scripts) hurt on tune, since Hindi Wikipedia writes loanwords in Devanagari
+- Spelling variants → note for Phase 6: most back-transliteration failures are valid
+  Devanagari variants (anusvara / chandrabindu / half-nasal, २ / 2); a normalization key on
+  both sides should address them
 - Known LLM errors → decided: kept in the frozen natural set, not hand-corrected (2 inserted
   words and 1 dropped word found in 1,518 queries; listed in docs/plans/03)
 - Romanized files in git → decided: `data/romanized/` is versioned (small text; the LLM
@@ -169,8 +201,9 @@ not started. Phase 4 is done (review gate approved 2026-11-09) on branch
   missing detail (Uroman options in Phase 3, training setup in Phase 7), not upfront
 - Fine-tuning setups → open: the paper compares native-only (N), 50/50 mixed (50) and
   romanized-only (T) training; consider mirroring all three in Phase 7
-- Back-transliteration tool → open: IndicXlit first, fallback decided at the start of
-  Phase 5
+- Back-transliteration tool → decided: IndicXlit in Docker (Python 3.8, pinned image in
+  `docker/indicxlit/`), run once and frozen; fairseq does not build on Windows/Python 3.11,
+  no reliable HF substitute exists, and Docker Desktop was already installed
 - Gujarati collection → open: decide in Phase 10
 - Run files in git → decided: `results/runs/*.trec` are git-ignored (1-17 MB each, rebuilt
   from their configs); `results/results.csv` and `results/per_query/*.csv` are versioned
@@ -205,5 +238,5 @@ not started. Phase 4 is done (review gate approved 2026-11-09) on branch
   driver can spill into system RAM instead, so a too-big job keeps running but many
   times slower (the BGE-M3 fine-tuning benchmark took ~36 min at 0% GPU use). Watch for
   this in Phase 7 training; the benchmark script now flags peaks above the GPU's memory
-- IndicXlit depends on fairseq, which is known to be hard to install on Windows and may
-  not support Python 3.11; it may need its own older env or WSL (Phase 5)
+- IndicXlit/fairseq do not install on Windows with Python 3.11 (confirmed 2026-11-09);
+  solved with the Docker image in `docker/indicxlit/`, needed only to regenerate candidates
