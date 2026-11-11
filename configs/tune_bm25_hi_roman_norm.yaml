@@ -1,0 +1,25 @@
+# Phase 6 task 5: grid search of BM25 k1 and b on the normalized romanized index, on the TUNE split only.
+# Same grid and metric as Phase 4 (configs/tune_bm25_hi.yaml).
+# Run: python -m scripts.tune_bm25 --config configs/tune_bm25_hi_roman_norm.yaml
+experiment: tune_bm25_hi_roman_norm
+phase: 6
+lang: hi
+seed: 42
+
+index_dir: data/indexes/hi_roman_norm    # built by configs/index_bm25_hi_roman_norm.yaml
+roman_normalize: [ch, sh, w_v, ph_f, anusvara, long_vowels, doubled, ei_e, eh_ah, schwa, final_a]
+floor_idf: true
+top_k: 1000
+
+split: tune
+queries: data/romanized/tune_queries_roman_natural.tsv   # natural queries: the main condition, and with
+                                                         # the key they now carry a signal (0.32, not ~0.01
+                                                         # as on the raw romanized index in task 4)
+qrels: data/processed/tune_qrels.tsv
+metric: ndcg@10
+
+grid:
+  k1: [0.6, 0.9, 1.2, 1.5, 2.0]
+  b: [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.75, 0.9]
+
+output: results/tuning/tune_bm25_hi_roman_norm.csv   # one row per (k1, b) with all metrics

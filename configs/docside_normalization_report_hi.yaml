@@ -1,0 +1,17 @@
+# Phase 6 task 1: what the Devanagari normalization key does to the corpus vocabulary
+# and to the tune queries (docs/plans/06-doc-side-normalization.md).
+# Run: python -m scripts.normalization_report --config configs/docside_normalization_report_hi.yaml
+experiment: docside_normalization_report_hi
+phase: 6
+lang: hi
+seed: 42                      # no randomness; kept for the config convention
+
+dataset: miracl/hi            # 506,264 passages, title + text (src.data.load.full_text)
+split: tune                   # the query check never looks at test
+native_queries: data/processed/tune_queries.tsv
+backtranslit_queries: data/processed/tune_queries_roman_natural_bt1.tsv   # Phase 5 top-1, natural set
+
+top_merges_all: 30            # merge groups listed for all rules together
+top_merges_per_rule: 10       # and for each rule alone
+
+output: data/processed/normalization_report_hi.md   # git-ignored working file

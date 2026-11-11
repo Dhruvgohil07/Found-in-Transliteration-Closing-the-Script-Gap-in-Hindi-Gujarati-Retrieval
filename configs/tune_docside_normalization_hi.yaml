@@ -1,0 +1,32 @@
+# Phase 6 task 2: leave-one-out ablation of the Devanagari normalization rules, on TUNE only
+# (docs/plans/06-doc-side-normalization.md).
+# Run: python -m scripts.tune_normalization --config configs/tune_docside_normalization_hi.yaml
+experiment: tune_docside_normalization_hi
+phase: 6
+lang: hi
+seed: 42                      # indexing and BM25 are deterministic; kept for the config convention
+
+index_config: configs/index_bm25_hi.yaml          # corpus, tokeniser etc. of the Phase 4 index
+index_dir_pattern: data/indexes/hi_native_norm_{setting}   # git-ignored, ~210 MB each; "none" reuses
+                                                           # the Phase 4 index data/indexes/hi_native
+bm25_config: configs/baseline_bm25.yaml           # k1 = 1.2, b = 0.3, IDF floor, top_k: the Phase 4
+                                                  # baseline, the same for every setting
+candidates_file: data/backtranslit/candidates_hi.tsv
+k: 5                          # candidates per word, as chosen in Phase 5
+
+split: tune
+qrels: data/processed/tune_qrels.tsv
+query_sets:                   # native: searched as written; romanized: weighted top-k back-transliteration
+  native: data/processed/tune_queries.tsv
+  roman_natural: data/romanized/tune_queries_roman_natural.tsv
+  roman_rule: data/romanized/tune_queries_roman_rule.tsv
+
+metric: ndcg@10
+decision_sets: [roman_natural, roman_rule]   # fixed before the run: a rule is kept if removing it
+                                             # lowers the mean nDCG@10 over the two romanized sets
+                                             # (the method's queries; native is reported, not decided on)
+
+extra_settings:               # added after the first run: the rules the decision kept, evaluated
+  kept: [chandrabindu, nasal, digits]   # together (leave-one-out never tests this set itself)
+
+output: results/tuning/tune_docside_normalization_hi.csv   # one row per (setting, query set), all metrics

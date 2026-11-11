@@ -1,0 +1,24 @@
+# Phase 6 task 6: grid search of BM25 k1 and b on the 5-gram romanized index, on the TUNE split only.
+# Run: python -m scripts.tune_bm25 --config configs/tune_bm25_hi_roman_ng5.yaml
+experiment: tune_bm25_hi_roman_ng5
+phase: 6
+lang: hi
+seed: 42
+
+index_dir: data/indexes/hi_roman_ng5     # built by configs/index_bm25_hi_roman_ng5.yaml
+roman_normalize: [ch, sh, w_v, ph_f, anusvara, long_vowels, doubled, ei_e, eh_ah, schwa, final_a]
+ngrams: 5
+floor_idf: true
+top_k: 1000
+
+split: tune
+queries: data/romanized/tune_queries_roman_natural.tsv   # natural queries, as for 3- and 4-grams
+qrels: data/processed/tune_qrels.tsv
+metric: ndcg@10
+
+grid:
+  k1: [0.3, 0.45, 0.6, 0.9, 1.2, 1.5, 2.0, 2.5, 3.0]   # the extended 4-gram grid; 0.3 and 0.45 added:
+                                                       # the first best (k1 = 0.6) was at the grid edge
+  b: [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.75, 0.9]
+
+output: results/tuning/tune_bm25_hi_roman_ng5.csv   # one row per (k1, b) with all metrics

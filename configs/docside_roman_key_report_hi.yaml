@@ -1,0 +1,17 @@
+# Phase 6 task 5: what the romanized key does to tune query words and to the romanized corpus
+# vocabulary (docs/plans/06-doc-side-normalization.md).
+# Run: python -m scripts.roman_key_report --config configs/docside_roman_key_report_hi.yaml
+experiment: docside_roman_key_report_hi
+phase: 6
+lang: hi
+seed: 42                      # no randomness; kept for the config convention
+
+split: tune                   # the word check never looks at test
+natural_queries: data/romanized/tune_queries_roman_natural.tsv
+rule_queries: data/romanized/tune_queries_roman_rule.tsv
+docs_file: data/corpus_roman/hi_uroman.jsonl     # from configs/docside_romanize_corpus_hi.yaml
+
+top_apart: 25                 # most common word pairs the key leaves apart
+top_merges: 40                # largest merge groups listed
+
+output: data/processed/roman_key_report_hi.md    # git-ignored working file

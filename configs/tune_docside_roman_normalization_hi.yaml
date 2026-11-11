@@ -1,0 +1,29 @@
+# Phase 6 task 5: leave-one-out ablation of the romanized normalization rules, on TUNE only
+# (docs/plans/06-doc-side-normalization.md).
+# Run: python -m scripts.tune_roman_normalization --config configs/tune_docside_roman_normalization_hi.yaml
+experiment: tune_docside_roman_normalization_hi
+phase: 6
+lang: hi
+seed: 42                      # indexing and BM25 are deterministic; kept for the config convention
+
+index_config: configs/index_bm25_hi_roman.yaml       # the romanized corpus and its tokeniser settings
+index_dir_pattern: data/indexes/hi_roman_norm_{setting}   # git-ignored, ~200 MB each; "none" reuses
+                                                          # the task 4 index data/indexes/hi_roman
+bm25_config: configs/docside_bm25_romindex.yaml      # k1 = 1.2, b = 0.3, IDF floor, top_k: the same
+                                                     # for every setting
+
+split: tune
+qrels: data/processed/tune_qrels.tsv
+query_sets:                   # raw romanized queries, normalized with each setting's rules
+  roman_natural: data/romanized/tune_queries_roman_natural.tsv
+  roman_rule: data/romanized/tune_queries_roman_rule.tsv
+
+metric: ndcg@10
+decision_set: roman_natural   # fixed before the run: a rule is kept if removing it lowers natural
+                              # nDCG@10 (how users type; the rule queries come from the passages'
+                              # own romanizer, so the key can only merge more for them: reported only)
+
+extra_settings:               # added after the first run: the rules the decision kept, evaluated together
+  kept: [ch, sh, w_v, ph_f, anusvara, long_vowels, doubled, ei_e, eh_ah, schwa, final_a]
+
+output: results/tuning/tune_docside_roman_normalization_hi.csv   # one row per (setting, query set)
