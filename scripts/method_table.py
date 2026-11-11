@@ -15,6 +15,14 @@ metrics and, for ``gap_metric``:
 - p vs native: paired t-test against the native run (no star: it asks whether
   the remaining difference to native is detectable, not whether a method wins).
 
+Two optional group keys (Phase 6):
+
+- ``reference: {label, run}`` adds a column "p vs <label>": a paired t-test of
+  each method against that run (e.g. the previous phase's best method), with no
+  correction, like p vs native;
+- ``also_show: {label: run}`` adds rows after the native run, with metrics only
+  (e.g. a second upper bound).
+
 All comparisons use the same queries: the native run is restricted to the
 romanized set's queries (the hand-romanized set covers 50 test queries).
 The Markdown file is generated; its numbers are never typed by hand.
@@ -56,21 +64,35 @@ def main() -> None:
     for group in cfg["groups"]:
         lines += ["", f"## {group['label']}"]
         native_all = per_query(group["native"])
+        reference = group.get("reference")
+        extra = f" p vs {reference['label']} |" if reference else ""
+        blank = " |" if reference else ""
         for qset in cfg["query_sets"]:
             roman = per_query(group["romanized"].format(set=qset))
             native = native_all.loc[roman.index]
+            ref = per_query(reference["run"].format(set=qset)) if reference else None
             lines += ["", f"### {qset} ({len(roman)} queries)", "",
-                      "| Run | " + " | ".join(metrics) + " | GapRecovered | p vs romanized | p vs native |",
-                      "|---|" + "---|" * (len(metrics) + 3)]
-            lines.append(f"| romanized (baseline) | {' | '.join(f'{roman[m].mean():.4f}' for m in metrics)} | 0% | | |")
+                      "| Run | " + " | ".join(metrics) + " | GapRecovered | p vs romanized | p vs native |" + extra,
+                      "|---|" + "---|" * (len(metrics) + 3 + bool(reference))]
+            lines.append(f"| romanized (baseline) | {' | '.join(f'{roman[m].mean():.4f}' for m in metrics)} "
+                         f"| 0% | | |{blank}")
             for label, pattern in group["methods"].items():
-                method = per_query(pattern.format(set=qset))
+                name = pattern.format(set=qset)
+                method = per_query(name)
                 vs_roman, vs_native = compare(method, roman, gm), compare(method, native, gm)
                 star = "*" if bonferroni_significant(vs_roman.p, n_comparisons, cfg["alpha"]) else ""
                 recovered = gap_recovered(native[gm].mean(), roman[gm].mean(), method[gm].mean())
+                vs_ref = ""
+                if reference:
+                    is_ref = name == reference["run"].format(set=qset)
+                    vs_ref = " (reference) |" if is_ref else f" {compare(method, ref, gm).p:.3f} |"
                 lines.append(f"| {label} | {' | '.join(f'{method[m].mean():.4f}' for m in metrics)} | "
-                             f"{recovered:.1%} | {vs_roman.p:.1e}{star} | {vs_native.p:.3f} |")
-            lines.append(f"| native (upper bound) | {' | '.join(f'{native[m].mean():.4f}' for m in metrics)} | 100% | | |")
+                             f"{recovered:.1%} | {vs_roman.p:.1e}{star} | {vs_native.p:.3f} |{vs_ref}")
+            lines.append(f"| native (upper bound) | {' | '.join(f'{native[m].mean():.4f}' for m in metrics)} "
+                         f"| 100% | | |{blank}")
+            for label, run in group.get("also_show", {}).items():
+                shown = per_query(run.format(set=qset)).loc[roman.index]
+                lines.append(f"| {label} | {' | '.join(f'{shown[m].mean():.4f}' for m in metrics)} | | | |{blank}")
 
     out = resolve_path(cfg["output"])
     out.parent.mkdir(parents=True, exist_ok=True)
