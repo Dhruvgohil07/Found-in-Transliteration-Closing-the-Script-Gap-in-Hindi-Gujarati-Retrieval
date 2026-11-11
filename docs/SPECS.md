@@ -70,6 +70,7 @@ data/                 raw + processed corpora, queries, qrels (git-ignored)
   processed/
   romanized/          romanized query sets (versioned: small, partly impossible to regenerate)
   backtranslit/       frozen IndicXlit candidates (versioned: regenerated only with the Docker image)
+  corpus_roman/       the corpus romanized with Uroman (git-ignored: 238 MB, rebuilt by scripts/romanize_corpus.py)
 src/
   data/               loading, splits, romanization, back-transliteration, normalization
   retrieval/          bm25, dense, dual index, fusion

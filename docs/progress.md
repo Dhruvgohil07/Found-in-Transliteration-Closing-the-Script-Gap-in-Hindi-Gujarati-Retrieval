@@ -2,8 +2,8 @@
 
 ## Current phase
 **Phase 6 — Doc-side romanization & normalization** (plan: docs/plans/06-doc-side-normalization.md);
-not started. Phase 5 is done (review gate approved 2026-11-09) on branch
-`phase-5/backtranslit`, not merged yet.
+started 2026-11-09 on branch `phase-6/doc-side-normalization`; done and review gate approved
+(2026-11-11), not committed yet.
 
 ## Completed
 - [x] Project brief and conventions in CLAUDE.md
@@ -121,12 +121,75 @@ not started. Phase 5 is done (review gate approved 2026-11-09) on branch
   written
 - [x] Phase 5 review gate approved (2026-11-09): back-transliteration recovers 81-98% of the
   gap; remaining failures are mostly Devanagari spelling variants (input to Phase 6)
+- [x] Phase 5 merged into `main` (2026-11-09)
+- [x] Phase 6 task list agreed (2026-11-09): a Devanagari normalization key added as task 1
+  (plan change noted in docs/plans/06-doc-side-normalization.md)
+
+- [x] Phase 6 task 1 (2026-11-09): Devanagari normalization key in `src/data/normalize.py`
+  with six switchable rules (zero_width, nukta, chandrabindu, nasal, final_virama, digits;
+  zero_width added after finding that Terrier splits words at a zero-width joiner); 29 tests
+  (134 in total). `scripts/normalization_report.py`: all rules change 4.46% of the corpus's
+  35.2M token occurrences and shrink the vocabulary by 5.62% (755,382 → 712,955); the
+  largest merges are true variants (फिल्म / फ़िल्म, हिन्दी / हिंदी, गाँव / गांव); on tune the
+  key resolves 28 of the 77 native words that top-1 back-transliteration misses
+
+- [x] Phase 6 task 2 (2026-11-09): normalization in the index build, BM25 searchers and
+  `tune_bm25.py` (rules recorded per index and checked against the queries; 3 tests, 137 in
+  total). Leave-one-out ablation on tune (`scripts/tune_normalization.py`): the decision rule
+  keeps chandrabindu, nasal, digits; tested together they beat no normalization on every tune
+  set (nDCG@10 native 0.3954 → 0.4113, natural top-5 0.3656 → 0.3807, rule top-5 0.3475 →
+  0.3607; p = 0.09-0.29, not significant). zero_width / final_virama / nukta "hurt" through the
+  weighted query (they fold IndicXlit junk candidates such as `किस्‌` back into common question
+  words), not through wrong merges. Index `data/indexes/hi_native_norm`; k1/b re-tuned on tune:
+  1.2 / 0.3 as in Phase 4; tune runs `bm25_norm` and `bm25_bt5_norm` in results.csv (test runs
+  in task 8)
+- [x] Phase 6 task 3 (2026-11-09): `scripts/romanize_corpus.py` (Uroman as in Phase 3, optional
+  worker processes) and `docs_file` support in `scripts/build_bm25_index.py`; 3 tests (140 in
+  total). 1% sample (5,063 passages, seed 42): 20-21 ms per passage in one process, 4.7 ms with
+  8 (byte-identical output), so the full corpus takes ≤ 40 min, ~0.23 GB of text and an index
+  of ≤ ~0.5 GB; no subset needed
+
+- [x] Phase 6 task 4 (2026-11-10): full corpus romanized with Uroman (25.8 min, 8 processes,
+  238 MB, git-ignored `data/corpus_roman/`); romanized index `data/indexes/hi_roman` (207 MB);
+  k1/b tuned on tune with the rule queries (natural ones give no signal): 1.2 / 0.3. Tune
+  nDCG@10 on the romanized index: rule queries 0.4109 (same romanizer on both sides; above
+  native 0.3954), natural queries 0.0078 (Uroman spells `upanissad`, users type `upanishad`)
+
+- [x] Phase 6 task 5 (2026-11-11): romanized key `normalize_romanized` in `src/data/normalize.py`
+  with 13 switchable rules derived from aligned natural/Uroman tune words; index records and
+  checks romanized rules too; `scripts/roman_key_report.py` (word matches 32.8% → 90.1%,
+  vocabulary −23.9%) and `scripts/tune_roman_normalization.py`; 184 tests. Leave-one-out kept
+  11 rules (z_j, y_glide dropped). Index `data/indexes/hi_roman_norm`, k1/b 1.2 / 0.3; tune
+  nDCG@10 natural 0.0078 → 0.3163, rule 0.4109 → 0.4203 (runs in results.csv)
+
+- [x] Phase 6 task 6 (2026-11-11): `char_ngrams` and the shared `text_key` (Devanagari key →
+  romanized key → n-grams) used by the index build and all searches; index records the n-gram
+  size; 4 tests (188 in total). 3-, 4- and 5-gram indexes, k1/b tuned per index on natural tune
+  queries (grid widened where the best was at its edge). Tune nDCG@10 natural: words 0.3163,
+  3-grams 0.3089, **4-grams 0.3642** (R@1000 0.884), 5-grams 0.3561; rule queries on 4-grams
+  0.4296. Chosen: 4-grams, k1 2.0, b 0.4 (runs in results.csv)
+
+- [x] Phase 6 task 7 (2026-11-11): `src/retrieval/dual_index.py` (RRF, k = 60, checked against
+  ranx) and `scripts/run_fusion.py`; 5 tests (193 in total). Dual index on tune (natural):
+  nDCG@10 0.3792, level with the native-normalized route alone (0.3807, p = 0.94), but
+  R@1000 0.9686 vs 0.9188 (p = 0.010); for rule queries the 4-gram route alone stays best
+
+- [x] Phase 6 task 8 (2026-11-11): every Phase 6 method run on test once; tables
+  `results/tables/docside_hi_tune.md`, `docside_hi_test.md`, `docside_hi_test_recall.md`
+  (`scripts/method_table.py` gained a "p vs Phase 5" column). Test nDCG@10 natural: normalized
+  native index + top-5 0.3870 (Phase 5 0.3737, p = 0.055); 4-gram romanized 0.3353; dual 0.3674
+  with R@1000 0.9351 vs 0.8874 (p < 0.001); human set best with 4-grams (0.4145). "What we
+  found" written in docs/plans/06-doc-side-normalization.md
+
+- [x] Phase 6 review gate approved (2026-11-11): Devanagari rules chandrabindu, nasal, digits;
+  11 romanized rules; the dual index helps recall, not top precision; carried into Phase 8: the
+  dual index and top-5 back-transliteration on the normalized native index
+
 ## In progress
 - (none)
 
 ## Next up
-- Commit and merge Phase 5, then Phase 6 — Doc-side romanization & normalization: agree
-  on the task list and files (spelling-variant normalization is now a priority)
+- Commit Phase 6 (when asked), then Phase 7 — dense fine-tuning: agree on the task list and files
 
 ## Open decisions / questions
 - Languages → decided: Hindi core, Gujarati as a separate droppable phase (Phase 10,
@@ -182,6 +245,15 @@ not started. Phase 5 is done (review gate approved 2026-11-09) on branch
 - Spelling variants → note for Phase 6: most back-transliteration failures are valid
   Devanagari variants (anusvara / chandrabindu / half-nasal, २ / 2); a normalization key on
   both sides should address them
+- Character n-grams → decided: 4-grams on the normalized romanized index, k1 2.0 / b 0.4 (best of
+  words and 3-, 4-, 5-grams on tune, each with its own tuned k1/b)
+- Romanized normalization rules → decided: ch, sh, w_v, ph_f, anusvara, long_vowels, doubled,
+  ei_e, eh_ah, schwa, final_a (leave-one-out on tune, decision on natural nDCG@10); the key
+  merges some different words (काम/कम), but it lifts retrieval on both query sets
+- Devanagari normalization rules → decided: chandrabindu, nasal, digits (leave-one-out on tune
+  with a decision rule fixed before the run: mean romanized nDCG@10); zero_width, nukta and
+  final_virama dropped although their merges are correct, since with the weighted query they
+  over-weight common question words
 - Known LLM errors → decided: kept in the frozen natural set, not hand-corrected (2 inserted
   words and 1 dropped word found in 1,518 queries; listed in docs/plans/03)
 - Romanized files in git → decided: `data/romanized/` is versioned (small text; the LLM
@@ -209,11 +281,16 @@ not started. Phase 5 is done (review gate approved 2026-11-09) on branch
   from their configs); `results/results.csv` and `results/per_query/*.csv` are versioned
 - BM25 setup → decided: queries tokenised with the index tokeniser, IDF floored at 0
   (terms in > half the passages dropped), k1 = 1.2 and b = 0.3 tuned on tune
-- Hindi normalization for BM25 → open: our BM25 (test nDCG@10 0.381) is below MIRACL's
-  Lucene BM25 with the Hindi analyzer (0.458); a possible later improvement
+- Hindi normalization for BM25 → partly addressed in Phase 6: the Devanagari key raises native
+  BM25 test nDCG@10 from 0.381 to 0.404 (p = 0.003); still below MIRACL's Lucene BM25 with the
+  Hindi analyzer (0.458), which also stems
 - Demo stack → open: Streamlit or Gradio; decide in Phase 11
 
 ## Known issues
+- Terrier drops terms longer than 20 characters (found 2026-11-10): romanization lengthens words
+  (चमत्कारचिन्तामणि -> `camatkaaracintaamanni`), so 10,041 of 35.2M romanized passage tokens
+  (0.029%) are not indexed and 2 passages become empty; no tune query and 1 test query token is
+  that long. Left at Terrier's default (negligible)
 - pytest prints "Windows fatal exception: access violation" stack dumps when a test starts
   Java (found 2026-11-09): the JVM raises and handles these itself and pytest's faulthandler
   reports them; the tests still pass. Harmless; faulthandler is left on to catch real crashes
