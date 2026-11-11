@@ -8,6 +8,9 @@ Every (k1, b) pair of the grid is run on the tune queries and scored; the table
 of all pairs is saved to ``output`` and the best pair by ``metric`` is printed.
 Only the tune split is allowed here (SPECS §5.2: no tuning on test). The
 grid rows are not written to results/results.csv, which holds reported runs.
+Phase 6 options (``normalize``, ``roman_normalize``, ``ngrams``) are applied to
+the queries with ``src.data.normalize.text_key`` and must match how the index
+was built.
 """
 
 import argparse
@@ -16,9 +19,10 @@ import itertools
 import pandas as pd
 
 from src.data.load import read_qrels, read_queries
+from src.data.normalize import text_key
 from src.data.splits import subset_qrels
 from src.eval.evaluate import mean_scores, per_query_scores
-from src.retrieval.bm25 import open_index, retrieve
+from src.retrieval.bm25 import check_normalization, open_index, retrieve
 from src.utils.config import load_config, resolve_path
 
 
@@ -31,6 +35,11 @@ def main() -> None:
 
     queries = read_queries(resolve_path(cfg["queries"]))
     qrels = subset_qrels(read_qrels(resolve_path(cfg["qrels"])), queries)
+    rules, roman_rules = cfg.get("normalize", []), cfg.get("roman_normalize", [])
+    ngrams = cfg.get("ngrams")
+    check_normalization(resolve_path(cfg["index_dir"]), rules, roman_rules, ngrams)
+    if rules or roman_rules or ngrams:
+        queries = {qid: text_key(text, rules, roman_rules, ngrams) for qid, text in queries.items()}
     index = open_index(resolve_path(cfg["index_dir"]))
 
     rows = []

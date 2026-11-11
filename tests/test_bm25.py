@@ -147,6 +147,82 @@ def test_weights_change_which_term_dominates(search_index):
     assert scaled["q"] == pytest.approx(favour_roy["q"])
 
 
+def test_index_normalization_record(tmp_path):
+    from src.retrieval.bm25 import (
+        check_normalization,
+        read_index_normalization,
+        write_index_normalization,
+    )
+
+    assert read_index_normalization(tmp_path) == []          # no file: raw text (Phase 4 index)
+    check_normalization(tmp_path, [])
+    write_index_normalization(tmp_path, ["chandrabindu", "nasal"])
+    assert read_index_normalization(tmp_path) == ["chandrabindu", "nasal"]
+    check_normalization(tmp_path, ["nasal", "chandrabindu"])  # order does not matter
+    with pytest.raises(ValueError, match="built with rules"):
+        check_normalization(tmp_path, ["nasal"])
+    with pytest.raises(ValueError, match="built with rules"):
+        check_normalization(tmp_path, [])
+
+    from src.retrieval.bm25 import read_index_roman_normalization
+
+    assert read_index_roman_normalization(tmp_path) == []      # Devanagari-only record
+    write_index_normalization(tmp_path, [], ["long_vowels", "doubled"])
+    assert read_index_roman_normalization(tmp_path) == ["long_vowels", "doubled"]
+    check_normalization(tmp_path, [], ["doubled", "long_vowels"])
+    with pytest.raises(ValueError, match="built with romanized rules"):
+        check_normalization(tmp_path, [], ["doubled"])
+
+    write_index_normalization(tmp_path, [], [], ngrams=3)
+    check_normalization(tmp_path, [], [], ngrams=3)
+    with pytest.raises(ValueError, match="n-grams of size 3"):
+        check_normalization(tmp_path, [], [])             # word queries on an n-gram index
+
+
+def test_ngram_index_matches_near_miss_spellings(tmp_path):
+    """Character n-grams let a typed spelling (olympic) find a passage with another
+    one (olampik) that shares no whole word with it."""
+    from src.data.normalize import char_ngrams
+
+    docs = [{"docno": "target", "text": "olampik khel"}] + [
+        {"docno": f"d{i}", "text": text} for i, text in enumerate(
+            ["kisan andolan", "cricket match", "mausam saf", "pustak mela", "rajdhani dilli"])]
+    words_dir, ngram_dir = tmp_path / "words", tmp_path / "ngrams"
+    build_index(docs, words_dir)
+    build_index([{**d, "text": char_ngrams(d["text"], 3)} for d in docs], ngram_dir)
+    words, ngrams = open_index(words_dir), open_index(ngram_dir)
+    try:
+        assert retrieve(words, {"q": "olympic"}, k1=1.2, b=0.75) == {}
+        run = retrieve(ngrams, {"q": char_ngrams("olympic", 3)}, k1=1.2, b=0.75)
+        assert max(run["q"], key=run["q"].get) == "target"
+    finally:
+        words.close()
+        ngrams.close()
+
+
+def test_normalized_index_matches_spelling_variants(tmp_path):
+    """The Phase 6 idea end to end: passages and queries both get the key, so a
+    query spelling (आंख, पंप) finds a passage written with the other one (आँख, पम्प)."""
+    from src.data.normalize import normalize_devanagari, normalize_weighted
+    from src.retrieval.bm25 import retrieve_weighted
+
+    docs = [{"docno": "variant", "text": "अर्जुन की आँख और पम्प"}] + SEARCH_DOCS
+    raw_dir, norm_dir = tmp_path / "raw", tmp_path / "norm"
+    build_index(docs, raw_dir)
+    build_index([{**d, "text": normalize_devanagari(d["text"])} for d in docs], norm_dir)
+    raw, norm = open_index(raw_dir), open_index(norm_dir)
+    try:
+        query = {"q": "आंख पंप"}
+        assert retrieve(raw, query, k1=1.2, b=0.75) == {}               # exact strings: no match
+        normalized = {"q": normalize_devanagari(query["q"])}
+        assert list(retrieve(norm, normalized, k1=1.2, b=0.75)["q"]) == ["variant"]
+        weighted = normalize_weighted({"आंख": 0.6, "आँख": 0.4})          # two variants -> one term
+        assert list(retrieve_weighted(norm, {"q": weighted}, k1=1.2, b=0.75)["q"]) == ["variant"]
+    finally:
+        raw.close()
+        norm.close()
+
+
 def test_weighted_terms_are_tokenised_and_merged(search_index):
     from src.retrieval.bm25 import retrieve_weighted
 

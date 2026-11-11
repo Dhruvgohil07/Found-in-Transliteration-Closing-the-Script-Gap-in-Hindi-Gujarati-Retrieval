@@ -33,12 +33,22 @@ Searcher = Callable[[Queries], Run]
 
 
 def bm25_searcher(cfg: dict) -> Searcher:
-    from src.retrieval.bm25 import open_index, retrieve
+    """BM25 with the queries as written. Phase 6 options, which must match how the
+    index was built: a ``normalize`` list (Devanagari key), a ``roman_normalize``
+    list (romanized key) and ``ngrams`` (character n-grams), applied to the
+    queries with ``src.data.normalize.text_key``."""
+    from src.data.normalize import text_key
+    from src.retrieval.bm25 import check_normalization, open_index, retrieve
 
+    rules, roman_rules = cfg.get("normalize", []), cfg.get("roman_normalize", [])
+    ngrams = cfg.get("ngrams")
+    check_normalization(resolve_path(cfg["index_dir"]), rules, roman_rules, ngrams)
     index = open_index(resolve_path(cfg["index_dir"]))
     params = cfg["bm25"]
 
     def search(queries: Queries) -> Run:
+        if rules or roman_rules or ngrams:
+            queries = {qid: text_key(text, rules, roman_rules, ngrams) for qid, text in queries.items()}
         return retrieve(
             index, queries, k1=params["k1"], b=params["b"], top_k=cfg["top_k"],
             floor_idf=params["floor_idf"],
@@ -49,16 +59,23 @@ def bm25_searcher(cfg: dict) -> Searcher:
 
 def bm25_backtranslit_searcher(cfg: dict) -> Searcher:
     """BM25 with weighted top-k back-transliterated queries (Phase 5): each romanized
-    query becomes ``src.data.backtranslit.weighted_query`` with ``backtranslit.k``."""
+    query becomes ``src.data.backtranslit.weighted_query`` with ``backtranslit.k``.
+    With a ``normalize`` list (Phase 6) the weighted query's terms get the
+    Devanagari key (``normalize_weighted``), checked against the index's rules."""
     from src.data.backtranslit import load_candidates, weighted_query
-    from src.retrieval.bm25 import open_index, retrieve_weighted
+    from src.data.normalize import normalize_weighted
+    from src.retrieval.bm25 import check_normalization, open_index, retrieve_weighted
 
+    rules = cfg.get("normalize", [])
+    check_normalization(resolve_path(cfg["index_dir"]), rules)
     index = open_index(resolve_path(cfg["index_dir"]))
     params, k = cfg["bm25"], cfg["backtranslit"]["k"]
     candidates = load_candidates(resolve_path(cfg["backtranslit"]["candidates_file"]))
 
     def search(queries: Queries) -> Run:
         weighted = {qid: weighted_query(text, candidates, k) for qid, text in queries.items()}
+        if rules:
+            weighted = {qid: normalize_weighted(query, rules) for qid, query in weighted.items()}
         return retrieve_weighted(index, weighted, k1=params["k1"], b=params["b"],
                                  top_k=cfg["top_k"], floor_idf=params["floor_idf"])
 
@@ -88,6 +105,11 @@ SEARCHERS: dict[str, Callable[[dict], Searcher]] = {
     "bm25_classic": bm25_searcher,
     "bm25_idf0": bm25_searcher,
     "bm25_bt5": bm25_backtranslit_searcher,
+    "bm25_norm": bm25_searcher,                 # Phase 6: normalized index and queries
+    "bm25_bt5_norm": bm25_backtranslit_searcher,
+    "bm25_romindex": bm25_searcher,             # Phase 6: romanized index, raw romanized queries
+    "bm25_romindex_norm": bm25_searcher,        # Phase 6: romanized index and queries with the romanized key
+    "bm25_romindex_ng4": bm25_searcher,         # Phase 6: the same, cut into character 4-grams
 }
 
 

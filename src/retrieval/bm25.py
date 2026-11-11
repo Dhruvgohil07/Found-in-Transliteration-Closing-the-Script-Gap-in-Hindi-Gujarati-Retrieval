@@ -34,6 +34,7 @@ containing them pushes down every passage that contains them. With
 flooring their IDF at 0 (a corpus-derived stopword list, no outside resource).
 """
 
+import json
 from collections.abc import Iterable, Iterator
 from pathlib import Path
 
@@ -79,6 +80,59 @@ def build_index(
         stopwords=getattr(pt.terrier.TerrierStopwords, stopwords),
     )
     return str(indexer.index(checked(docs)))
+
+
+NORMALIZATION_FILE = "normalization.json"
+
+
+def write_index_normalization(index_dir: str | Path, rules: Iterable[str],
+                              roman_rules: Iterable[str] = (), ngrams: int | None = None) -> None:
+    """Record next to the index which normalization its text went through
+    (Phase 6): Devanagari ``rules``, romanized ``roman_rules`` and character
+    ``ngrams`` (None: whole words), so a search can check that its queries get
+    the same treatment."""
+    path = Path(index_dir) / NORMALIZATION_FILE
+    record = {"devanagari_rules": list(rules), "roman_rules": list(roman_rules), "ngrams": ngrams}
+    path.write_text(json.dumps(record) + "\n", encoding="utf-8")
+
+
+def _read_record(index_dir: str | Path) -> dict:
+    path = Path(index_dir) / NORMALIZATION_FILE
+    return json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+
+
+def read_index_normalization(index_dir: str | Path) -> list[str]:
+    """The Devanagari rules recorded by ``write_index_normalization``; an index
+    without the file (built before Phase 6) holds the raw text, i.e. no rules."""
+    return _read_record(index_dir).get("devanagari_rules", [])
+
+
+def read_index_roman_normalization(index_dir: str | Path) -> list[str]:
+    """The romanized rules recorded by ``write_index_normalization`` (none if not recorded)."""
+    return _read_record(index_dir).get("roman_rules", [])
+
+
+def read_index_ngrams(index_dir: str | Path) -> int | None:
+    """The character n-gram size recorded by ``write_index_normalization`` (None: words)."""
+    return _read_record(index_dir).get("ngrams")
+
+
+def check_normalization(index_dir: str | Path, query_rules: Iterable[str],
+                        roman_rules: Iterable[str] = (), ngrams: int | None = None) -> None:
+    """Raise ``ValueError`` unless the queries are normalized with exactly the
+    rules the index was built with (Devanagari and romanized) and cut into the
+    same character n-grams. A mismatch would not fail on its own: the variant
+    spellings would simply stop matching, and the scores would drop."""
+    if read_index_ngrams(index_dir) != ngrams:
+        raise ValueError(f"index {index_dir} holds n-grams of size {read_index_ngrams(index_dir)}, "
+                         f"but the queries use {ngrams}")
+    for kind, index_rules, used in [
+        ("rules", read_index_normalization(index_dir), query_rules),
+        ("romanized rules", read_index_roman_normalization(index_dir), roman_rules),
+    ]:
+        if set(index_rules) != set(used):
+            raise ValueError(f"index {index_dir} was built with {kind} {sorted(index_rules)}, "
+                             f"but the queries use {sorted(set(used))}")
 
 
 def open_index(index_dir: str | Path):
