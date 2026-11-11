@@ -1,0 +1,29 @@
+# Phase 6 task 7: dual-index retrieval, RRF of two routes to the native passages
+# (docs/plans/06-doc-side-normalization.md).
+# Run: python -m scripts.run_fusion --config configs/docside_dual_rrf.yaml [--split tune]
+experiment: docside_dual_rrf_hi
+phase: 6
+lang: hi
+seed: 42                      # RRF and BM25 are deterministic; kept for the config convention
+method: dual_rrf              # run names: hi_dual_rrf_{query_set}_{split}
+
+components:                   # their run files must exist (scripts/run_baseline.py)
+  - configs/docside_bt5_norm_bm25.yaml      # normalized native index <- back-transliterated top-5 query
+  - configs/docside_bm25_romindex_ng4.yaml  # normalized romanized 4-gram index <- raw romanized query
+rrf_k: 60                     # Cormack et al. (2009); fixed here, tuned in Phase 8
+top_k: 1000
+
+compare_with:                 # printed next to the fused run, not fused
+  - configs/backtranslit_topk_bm25.yaml     # Phase 5 best BM25 (raw native index)
+metric: ndcg@10
+
+splits: [tune, test]          # test is run at the end of the phase (task 8)
+qrels: data/processed/{split}_qrels.tsv
+query_sets:
+  roman_natural: data/romanized/{split}_queries_roman_natural.tsv
+  roman_rule: data/romanized/{split}_queries_roman_rule.tsv
+  roman_human: data/romanized/{split}_queries_roman_human_a.tsv   # test only (50 queries)
+
+output:
+  run_dir: results/runs
+  per_query_dir: results/per_query

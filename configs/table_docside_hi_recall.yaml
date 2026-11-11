@@ -1,0 +1,33 @@
+﻿# Phase 6 task 8: the test-split table of configs/table_docside_hi.yaml with GapRecovered and the
+# p-values on recall@1000 instead of nDCG@10 (the dual index is meant to raise recall).
+# Run: python -m scripts.method_table --config configs/table_docside_hi_recall.yaml
+experiment: table_docside_hi_recall
+phase: 6
+lang: hi
+seed: 42
+
+split: test
+query_sets: [roman_natural, roman_rule, roman_human]
+metrics: [ndcg@10, mrr@10, recall@100, recall@1000]
+gap_metric: recall@1000       # GapRecovered and the p-values are reported for this metric
+alpha: 0.05                   # Bonferroni over every method-vs-romanized comparison in the table
+
+per_query_dir: results/per_query
+groups:                       # run names without the split; {set} = the romanized query set
+  - label: BM25 (each index with its own tuned k1/b)
+    native: hi_bm25_native
+    romanized: hi_bm25_{set}
+    reference:                # extra column: p vs the Phase 5 best BM25 method
+      label: Phase 5
+      run: hi_bm25_bt5_{set}
+    methods:
+      "Phase 5: top-5 back-transliteration, native index": hi_bm25_bt5_{set}
+      "romanized index (Uroman), raw query": hi_bm25_romindex_{set}
+      "+ romanized key": hi_bm25_romindex_norm_{set}
+      "+ romanized key + 4-grams": hi_bm25_romindex_ng4_{set}
+      "top-5 back-transliteration, normalized native index": hi_bm25_bt5_norm_{set}
+      "dual index (RRF of the two lines above)": hi_dual_rrf_{set}
+    also_show:
+      native, normalized native index: hi_bm25_norm_native
+
+output: results/tables/docside_hi_test_recall.md   # generated, never edited by hand

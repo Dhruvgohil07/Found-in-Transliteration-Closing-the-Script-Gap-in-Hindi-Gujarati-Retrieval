@@ -1,0 +1,33 @@
+# Phase 6 task 8: tune-split ablation table of the document-side methods next to the Phase 4
+# baselines and Phase 5 (docs/plans/06-doc-side-normalization.md).
+# Run: python -m scripts.method_table --config configs/table_docside_hi_tune.yaml
+experiment: table_docside_hi_tune
+phase: 6
+lang: hi
+seed: 42
+
+split: tune                   # the ablation: every choice of Phase 6 was made on these numbers
+query_sets: [roman_natural, roman_rule]   # the hand-romanized set exists on test only
+metrics: [ndcg@10, mrr@10, recall@100, recall@1000]
+gap_metric: ndcg@10
+alpha: 0.05
+
+per_query_dir: results/per_query
+groups:                       # run names without the split; {set} = the romanized query set
+  - label: BM25 (each index with its own tuned k1/b)
+    native: hi_bm25_native
+    romanized: hi_bm25_{set}
+    reference:                # extra column: p vs the Phase 5 best BM25 method
+      label: Phase 5
+      run: hi_bm25_bt5_{set}
+    methods:
+      "Phase 5: top-5 back-transliteration, native index": hi_bm25_bt5_{set}
+      "romanized index (Uroman), raw query": hi_bm25_romindex_{set}
+      "+ romanized key": hi_bm25_romindex_norm_{set}
+      "+ romanized key + 4-grams": hi_bm25_romindex_ng4_{set}
+      "top-5 back-transliteration, normalized native index": hi_bm25_bt5_norm_{set}
+      "dual index (RRF of the two lines above)": hi_dual_rrf_{set}
+    also_show:
+      native, normalized native index: hi_bm25_norm_native
+
+output: results/tables/docside_hi_tune.md   # generated, never edited by hand

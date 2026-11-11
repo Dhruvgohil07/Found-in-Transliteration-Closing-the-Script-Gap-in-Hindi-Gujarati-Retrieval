@@ -1,0 +1,26 @@
+# Phase 6 task 4: BM25 on the romanized (Uroman) index with the raw romanized queries
+# (docs/plans/06-doc-side-normalization.md).
+# Run: python -m scripts.run_baseline --config configs/docside_bm25_romindex.yaml [--split tune]
+experiment: docside_bm25_romindex_hi
+phase: 6
+lang: hi
+seed: 42                      # BM25 is deterministic; kept for the config convention
+method: bm25_romindex         # run names: hi_bm25_romindex_{query_set}_{split}
+
+index_dir: data/indexes/hi_roman   # built by configs/index_bm25_hi_roman.yaml
+bm25:
+  k1: 1.2                     # tuned on tune with the rule queries by configs/tune_bm25_hi_roman.yaml
+  b: 0.3                      # (the same pair as Phase 4)
+  floor_idf: true
+top_k: 1000
+
+splits: [tune, test]          # test is run at the end of the phase (task 8)
+qrels: data/processed/{split}_qrels.tsv
+query_sets:                   # romanized queries as typed; native queries cannot match a Latin-script index
+  roman_natural: data/romanized/{split}_queries_roman_natural.tsv
+  roman_rule: data/romanized/{split}_queries_roman_rule.tsv
+  roman_human: data/romanized/{split}_queries_roman_human_a.tsv   # test only (50 queries)
+
+output:
+  run_dir: results/runs
+  per_query_dir: results/per_query

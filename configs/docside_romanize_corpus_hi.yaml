@@ -1,0 +1,16 @@
+# Phase 6 tasks 3-4: romanize the Hindi passages with Uroman (docs/plans/06-doc-side-normalization.md).
+# Run: python -m scripts.romanize_corpus --config configs/docside_romanize_corpus_hi.yaml [--sample]
+experiment: docside_romanize_corpus_hi
+phase: 6
+lang: hin                     # Uroman's ISO 639-3 code, as for the rule-based query set (configs/romanize_hi.yaml)
+seed: 42                      # picks the timing sample
+
+dataset: miracl/hi            # 506,264 passages, title + text (src.data.load.full_text)
+tool: uroman==1.3.1.1         # the rule-based romanizer of Phase 3 (the reference paper's tool)
+workers: 8                    # processes (8 physical cores). Timing on the 1% sample: 1 worker 20-21 ms
+                              # per passage (~3 h for the corpus), 8 workers 4.7 ms (~40 min); the
+                              # output is byte-identical either way
+
+sample_fraction: 0.01         # task 3: time and size a 1% sample first
+sample_file: data/corpus_roman/hi_uroman_sample.jsonl   # git-ignored (/data/*), rebuilt by this script
+output_file: data/corpus_roman/hi_uroman.jsonl

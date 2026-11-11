@@ -1,0 +1,17 @@
+# Phase 6 task 5: BM25 index of the romanized (Uroman) corpus with the romanized normalization key
+# (docs/plans/06-doc-side-normalization.md). Rules chosen on tune by
+# configs/tune_docside_roman_normalization_hi.yaml (leave-one-out ablation).
+# Run: python -m scripts.build_bm25_index --config configs/index_bm25_hi_roman_norm.yaml
+experiment: index_bm25_hi_roman_norm
+phase: 6
+lang: hi
+seed: 42                      # indexing is deterministic; kept for the config convention
+
+docs_file: data/corpus_roman/hi_uroman.jsonl   # from configs/docside_romanize_corpus_hi.yaml
+roman_normalize: [ch, sh, w_v, ph_f, anusvara, long_vowels, doubled, ei_e, eh_ah, schwa, final_a]
+index_dir: data/indexes/hi_roman_norm          # git-ignored; rebuild with the command above
+
+tokeniser: utf                # same settings as the raw romanized index (configs/index_bm25_hi_roman.yaml)
+stemmer: none
+stopwords: none
+docno_length: 32

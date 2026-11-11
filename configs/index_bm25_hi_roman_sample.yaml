@@ -1,0 +1,14 @@
+# Phase 6 task 3: BM25 index of the 1% romanized timing sample (not used for retrieval).
+# Run: python -m scripts.build_bm25_index --config configs/index_bm25_hi_roman_sample.yaml
+experiment: index_bm25_hi_roman_sample
+phase: 6
+lang: hi
+seed: 42
+
+docs_file: data/corpus_roman/hi_uroman_sample.jsonl   # from scripts/romanize_corpus.py --sample
+index_dir: data/indexes/hi_roman_sample               # git-ignored
+
+tokeniser: utf                # same settings as the native index (configs/index_bm25_hi.yaml)
+stemmer: none                 # no English stemming: it changes romanized Hindi (roy -> roi)
+stopwords: none
+docno_length: 32

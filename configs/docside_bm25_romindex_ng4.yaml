@@ -1,0 +1,29 @@
+# Phase 6 task 6: BM25 on character 4-grams of the normalized romanized index, with the raw romanized
+# queries keyed and cut the same way (docs/plans/06-doc-side-normalization.md).
+# Run: python -m scripts.run_baseline --config configs/docside_bm25_romindex_ng4.yaml [--split tune]
+experiment: docside_bm25_romindex_ng4_hi
+phase: 6
+lang: hi
+seed: 42                      # BM25 is deterministic; kept for the config convention
+method: bm25_romindex_ng4     # run names: hi_bm25_romindex_ng4_{query_set}_{split}
+
+index_dir: data/indexes/hi_roman_ng4   # built by configs/index_bm25_hi_roman_ng4.yaml
+roman_normalize: [ch, sh, w_v, ph_f, anusvara, long_vowels, doubled, ei_e, eh_ah, schwa, final_a]
+ngrams: 4                     # chosen on tune: 4-grams 0.3642 nDCG@10 (natural), 5-grams 0.3561,
+                              # words 0.3163, 3-grams 0.3089 (each with its own tuned k1/b)
+bm25:
+  k1: 2.0                     # tuned on tune with the natural queries by configs/tune_bm25_hi_roman_ng4.yaml
+  b: 0.4
+  floor_idf: true
+top_k: 1000
+
+splits: [tune, test]          # test is run at the end of the phase (task 8)
+qrels: data/processed/{split}_qrels.tsv
+query_sets:                   # raw romanized queries; the searcher applies the key and the n-grams
+  roman_natural: data/romanized/{split}_queries_roman_natural.tsv
+  roman_rule: data/romanized/{split}_queries_roman_rule.tsv
+  roman_human: data/romanized/{split}_queries_roman_human_a.tsv   # test only (50 queries)
+
+output:
+  run_dir: results/runs
+  per_query_dir: results/per_query

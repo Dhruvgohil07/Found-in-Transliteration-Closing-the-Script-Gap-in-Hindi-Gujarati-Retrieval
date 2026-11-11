@@ -1,0 +1,14 @@
+# Phase 6 task 4: BM25 index of the corpus romanized with Uroman (docs/plans/06-doc-side-normalization.md).
+# Run: python -m scripts.build_bm25_index --config configs/index_bm25_hi_roman.yaml
+experiment: index_bm25_hi_roman
+phase: 6
+lang: hi
+seed: 42                      # indexing is deterministic; kept for the config convention
+
+docs_file: data/corpus_roman/hi_uroman.jsonl   # from configs/docside_romanize_corpus_hi.yaml
+index_dir: data/indexes/hi_roman                # git-ignored; rebuild with the command above
+
+tokeniser: utf                # same settings as the native index (configs/index_bm25_hi.yaml)
+stemmer: none                 # no English stemming: it changes romanized Hindi (roy -> roi)
+stopwords: none
+docno_length: 32

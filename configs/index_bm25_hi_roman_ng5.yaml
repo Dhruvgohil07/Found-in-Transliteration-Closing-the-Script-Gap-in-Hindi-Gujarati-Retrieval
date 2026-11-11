@@ -1,0 +1,19 @@
+# Phase 6 task 6: BM25 index of character 5-grams of the normalized romanized corpus
+# (docs/plans/06-doc-side-normalization.md). Added after 4-grams beat 3-grams by a wide margin on
+# tune, so the best n was at the edge of the planned range {3, 4}. Run:
+#   python -m scripts.build_bm25_index --config configs/index_bm25_hi_roman_ng5.yaml
+experiment: index_bm25_hi_roman_ng5
+phase: 6
+lang: hi
+seed: 42                      # indexing is deterministic; kept for the config convention
+
+docs_file: data/corpus_roman/hi_uroman.jsonl   # from configs/docside_romanize_corpus_hi.yaml
+roman_normalize: [ch, sh, w_v, ph_f, anusvara, long_vowels, doubled, ei_e, eh_ah, schwa, final_a]
+                              # the task 5 key (configs/index_bm25_hi_roman_norm.yaml), then n-grams
+ngrams: 5                     # src.data.normalize.char_ngrams: words padded with 0, numbers kept whole
+index_dir: data/indexes/hi_roman_ng5           # git-ignored; rebuild with the command above
+
+tokeniser: utf
+stemmer: none
+stopwords: none
+docno_length: 32
