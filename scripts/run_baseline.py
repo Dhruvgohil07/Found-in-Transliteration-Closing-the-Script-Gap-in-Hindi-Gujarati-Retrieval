@@ -101,6 +101,9 @@ def dense_searcher(cfg: dict) -> Searcher:
 
 SEARCHERS: dict[str, Callable[[dict], Searcher]] = {
     "e5base": dense_searcher,
+    "e5ft_N": dense_searcher,                   # Phase 7: e5-base fine-tuned on N / 50 / T
+    "e5ft_50": dense_searcher,
+    "e5ft_T": dense_searcher,
     "bm25": bm25_searcher,
     "bm25_classic": bm25_searcher,
     "bm25_idf0": bm25_searcher,
