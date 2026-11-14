@@ -1,0 +1,47 @@
+# Phase 7 task 4: choose the checkpoint (epoch) of each training configuration on the TUNE split,
+# over a fixed candidate pool (docs/plans/07-dense-finetune.md).
+# Run: python -m scripts.select_checkpoint --config configs/select_checkpoint_hi.yaml
+experiment: select_checkpoint_hi
+phase: 7
+lang: hi
+seed: 42                      # encoding and search are deterministic; kept for the config convention
+
+split: tune
+dataset: miracl/hi            # pool passage texts: title + text
+qrels: data/processed/tune_qrels.tsv
+query_sets:
+  native: data/processed/tune_queries.tsv
+  roman_natural: data/romanized/tune_queries_roman_natural.tsv
+  roman_rule: data/romanized/tune_queries_roman_rule.tsv
+
+# Candidate pool: every passage judged for a tune query + the top pool_depth of these tune runs
+run_dir: results/runs
+pool_depth: 100
+pool_runs:
+  - hi_e5base_native_tune
+  - hi_e5base_roman_natural_bt1_tune
+  - hi_e5base_roman_rule_bt1_tune
+  - hi_bm25_native_tune
+  - hi_bm25_bt5_norm_roman_natural_tune
+  - hi_bm25_bt5_norm_roman_rule_tune
+  - hi_bm25_romindex_ng4_roman_natural_tune
+  - hi_bm25_romindex_ng4_roman_rule_tune
+pool_file: data/train/tune_pool_hi.jsonl     # git-ignored cache of the pool texts
+
+baseline_model: intfloat/multilingual-e5-base   # off-the-shelf, scored on the same pool
+train_configs:
+  N: configs/train_dense_N.yaml
+  "50": configs/train_dense_50.yaml
+  T: configs/train_dense_T.yaml
+
+passage_max_length: 256       # as in the corpus encoding (configs/baseline_dense.yaml)
+query_max_length: 64          # as the Phase 4 dense baseline: no query is cut (the longest, a rule
+                              # test query, is 56 tokens with prefix; 48 would cut 4 test rule queries)
+batch_size: 64
+top_k: 1000
+
+metric: ndcg@10
+decision_set: roman_natural   # fixed before the run: each configuration's epoch is chosen by natural
+                              # romanized nDCG@10 (the plan's criterion), the same rule for N, 50, T
+
+output: results/tuning/select_checkpoint_hi.csv   # one row per (model, query set), all metrics

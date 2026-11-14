@@ -1,0 +1,28 @@
+# Phase 7: fine-tune multilingual-e5-base on the 50 configuration (half the training queries native,
+# half romanized; docs/plans/07-dense-finetune.md).
+# Run: python -m scripts.train_dense --config configs/train_dense_50.yaml
+experiment: train_dense_e5base_50
+phase: 7
+lang: hi
+seed: 42                      # model init is the pretrained model; the seed fixes batch order and dropout
+
+model: intfloat/multilingual-e5-base
+train_file: data/train/hi_train_50.jsonl   # from configs/train_pairs_hi.yaml
+output_dir: models/e5base_hi_50            # git-ignored: one checkpoint per epoch + log_history.json
+log_file: results/training/train_dense_e5base_50.json   # versioned copy of the loss log
+max_seq_length: 256           # applies to every column: passages are cut as in Phase 4, queries
+                              # (at most 55 tokens) are never cut and are padded per batch
+
+loss:
+  scale: 100                  # 1/τ with τ = 0.01, e5's training temperature (Wang et al. 2022, §4.1)
+  mini_batch_size: 16         # chunk size inside the cached loss (memory only, not the result)
+
+training:
+  batch_size: 64              # examples per step: 1 judged + 126 in-batch negatives per query
+  epochs: 6                   # the checkpoint (epoch) is chosen on tune (task 4); 6, not 3: with 3,
+                              # T's best was the last epoch (the edge of the range)
+  learning_rate: 2.0e-5       # e5's fine-tuning learning rate (Wang et al. 2022, Table 11)
+  warmup_ratio: 0.1           # linear warm-up over the first 10% of steps, then linear decay
+  fp16: true
+  save_strategy: epoch
+  logging_steps: 5

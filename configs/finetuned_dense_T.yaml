@@ -1,0 +1,38 @@
+# Phase 7 task 5: the e5-base model fine-tuned on the T set-up, chosen checkpoint, as a dense retriever
+# (docs/plans/07-dense-finetune.md). Same settings as the off-the-shelf baseline (configs/baseline_dense.yaml).
+#   1. python -m scripts.encode_corpus --config configs/finetuned_dense_T.yaml   (once, ~17 min)
+#   2. python -m scripts.run_baseline --config configs/finetuned_dense_T.yaml
+experiment: finetuned_dense_e5base_T_hi
+phase: 7
+lang: hi
+seed: 42
+method: e5ft_T               # run names: hi_e5ft_T_{query_set}_{split}
+
+model: models/e5base_hi_T/checkpoint-156   # epoch 4 of 6, chosen on tune (configs/select_checkpoint_hi.yaml);
+                                            # trained by configs/train_dense_T.yaml (git-ignored, rebuildable)
+fp16: true
+
+# Corpus encoding (step 1), cached and git-ignored
+dataset: miracl/hi            # 506,264 passages, title + text (src.data.load.full_text)
+embeddings_dir: data/embeddings/hi_e5ft_T
+passage_max_length: 256       # as the baseline and as in training
+shard_size: 50000
+batch_size: 64
+
+query_max_length: 64          # as the baseline: no query of any set is cut (longest: 56 tokens)
+top_k: 1000
+
+splits: [tune, test]
+qrels: data/processed/{split}_qrels.tsv
+query_sets:                   # a set whose file does not exist for a split is skipped
+  native: data/processed/{split}_queries.tsv
+  roman_natural: data/romanized/{split}_queries_roman_natural.tsv
+  roman_rule: data/romanized/{split}_queries_roman_rule.tsv
+  roman_human: data/romanized/{split}_queries_roman_human_a.tsv            # test only (50 queries)
+  roman_natural_bt1: data/processed/{split}_queries_roman_natural_bt1.tsv  # top-1 back-transliterated
+  roman_rule_bt1: data/processed/{split}_queries_roman_rule_bt1.tsv        # (Phase 5)
+  roman_human_bt1: data/processed/{split}_queries_roman_human_bt1.tsv      # test only
+
+output:
+  run_dir: results/runs
+  per_query_dir: results/per_query

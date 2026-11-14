@@ -1,0 +1,17 @@
+# Phase 7 task 1: training examples (query, relevant passage, judged non-relevant passage) for the
+# three configurations N / 50 / T (docs/plans/07-dense-finetune.md).
+# Run: python -m scripts.build_train_pairs --config configs/train_pairs_hi.yaml
+experiment: train_pairs_hi
+phase: 7
+lang: hi
+seed: 42                      # picks the 50/50 query split and the negatives
+
+dataset: miracl/hi            # passage texts: title + text, as indexed and encoded
+native_queries: data/processed/train_queries.tsv          # 1,168 training queries (Phase 2)
+romanized_queries: data/romanized/train_queries_roman_natural.tsv   # natural set (Phase 3)
+qrels: data/processed/train_qrels.tsv     # relevant (> 0) and judged non-relevant (0) passages
+protected_queries:            # must share no id or text with the training queries
+  tune: data/processed/tune_queries.tsv
+  test: data/processed/test_queries.tsv
+
+output_dir: data/train        # git-ignored; {lang}_train_{N,50,T}.jsonl, rebuilt by the script
