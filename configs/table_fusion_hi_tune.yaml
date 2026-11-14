@@ -1,0 +1,53 @@
+# Phase 8 task 4: tune-split table (where the parameters were chosen) of the hybrids next to the Phase 4 baselines, their components
+# and the best single method (Phase 5 dense) (docs/plans/08-hybrid-fusion.md).
+# Run: python -m scripts.method_table --config configs/table_fusion_hi_tune.yaml
+experiment: table_fusion_hi_tune
+phase: 8
+lang: hi
+seed: 42
+
+split: tune
+query_sets: [roman_natural, roman_rule]   # no hand-romanized set on tune
+metrics: [ndcg@10, mrr@10, recall@100, recall@1000]
+gap_metric: ndcg@10
+alpha: 0.05                   # Bonferroni over every method-vs-romanized and every method-vs-reference comparison
+
+per_query_dir: results/per_query
+groups:                       # run names without the split; {set} = the romanized query set
+  - label: Hybrids with back-transliteration (GapRecovered against the dense baselines)
+    native: hi_e5base_native
+    romanized: hi_e5base_{set}
+    reference:                # the best single method so far
+      label: Phase 5 dense
+      run: hi_e5base_{set}_bt1
+      bonferroni: true
+    methods:
+      "Phase 5: dense e5 + top-1 back-transliteration": hi_e5base_{set}_bt1
+      "A, RRF (k 10): normalized BM25 top-5 + dense e5 top-1": hi_fusion_A_rrf_{set}
+      "A, interpolation (alpha 0.3)": hi_fusion_A_interp_{set}
+      "B, RRF (k 10): normalized BM25 top-5 + fine-tuned N top-1": hi_fusion_B_rrf_{set}
+      "B, interpolation (alpha 0.4)": hi_fusion_B_interp_{set}
+      "C, RRF (k 5): dual index + dense e5 top-1": hi_fusion_C_rrf_{set}
+      "C, interpolation (alpha 0.3)": hi_fusion_C_interp_{set}
+    also_show:                # components and Phase 4 BM25 baselines, metrics only
+      "component: normalized BM25 top-5 (Phase 6)": hi_bm25_bt5_norm_{set}
+      "component: dual index (Phase 6)": hi_dual_rrf_{set}
+      "component: fine-tuned N + top-1 (Phase 7)": hi_e5ft_N_{set}_bt1
+      "BM25 native (Phase 4)": hi_bm25_native
+      "BM25 romanized (Phase 4)": hi_bm25_{set}
+  - label: Hybrid without a transliteration model (GapRecovered against the dense baselines)
+    native: hi_e5base_native
+    romanized: hi_e5base_{set}
+    reference:
+      label: Phase 5 dense
+      run: hi_e5base_{set}_bt1
+      bonferroni: true
+    methods:
+      "D, RRF (k 30): romanized 4-gram BM25 + fine-tuned T, raw query": hi_fusion_D_rrf_{set}
+      "D, interpolation (alpha 0.6)": hi_fusion_D_interp_{set}
+    also_show:
+      "component: romanized 4-gram BM25 (Phase 6)": hi_bm25_romindex_ng4_{set}
+      "component: fine-tuned T, raw query (Phase 7)": hi_e5ft_T_{set}
+      "Phase 5: dense e5 + top-1 back-transliteration": hi_e5base_{set}_bt1
+
+output: results/tables/fusion_hi_tune.md   # generated, never edited by hand

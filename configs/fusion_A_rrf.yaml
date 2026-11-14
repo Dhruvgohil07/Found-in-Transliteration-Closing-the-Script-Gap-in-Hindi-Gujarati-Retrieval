@@ -1,0 +1,33 @@
+# Phase 8: hybrid A, Reciprocal Rank Fusion (docs/plans/08-hybrid-fusion.md).
+# best lexical (top-5 back-transliteration, normalized native BM25) + off-the-shelf e5, top-1 back-transliteration.
+# Run: python -m scripts.run_fusion --config configs/fusion_A_rrf.yaml [--split tune]
+experiment: fusion_A_rrf_hi
+phase: 8
+lang: hi
+seed: 42                      # fusion is deterministic; kept for the config convention
+method: fusion_A_rrf         # run names: hi_fusion_A_rrf_{query_set}_{split}
+
+components:                   # lexical first; {set} = the fused query set (scripts/run_fusion.py)
+  - configs/docside_bt5_norm_bm25.yaml
+  - {config: configs/backtranslit_top1_dense.yaml, query_set: "{set}_bt1"}
+fusion:
+  method: rrf
+  k: 10
+                              # chosen on tune by natural nDCG@10 (configs/tune_fusion_hi.yaml,
+                              # results/tuning/tune_fusion_hi.csv)
+top_k: 1000
+
+compare_with:                 # printed next to the fused run, not fused
+  - {config: configs/backtranslit_top1_dense.yaml, query_set: "{set}_bt1"}   # Phase 5 best single method
+metric: ndcg@10
+
+splits: [tune, test]          # test run once, after every choice was made on tune
+qrels: data/processed/{split}_qrels.tsv
+query_sets:
+  roman_natural: data/romanized/{split}_queries_roman_natural.tsv
+  roman_rule: data/romanized/{split}_queries_roman_rule.tsv
+  roman_human: data/romanized/{split}_queries_roman_human_a.tsv   # test only (50 queries)
+
+output:
+  run_dir: results/runs
+  per_query_dir: results/per_query

@@ -1,0 +1,23 @@
+# Phase 8 review gate: which hybrid is the final system? The interpolation hybrids against each other,
+# with A (no fine-tuned model) as the baseline (docs/plans/08-hybrid-fusion.md).
+# Run: python -m scripts.compare_runs --config configs/compare_fusion_hi.yaml
+experiment: compare_fusion_hi
+phase: 8
+lang: hi
+seed: 42
+
+split: test
+description: "Romanized test queries: hybrids B (fine-tuned N) and C (dual index) against hybrid A (off-the-shelf e5, normalized BM25), all with score interpolation."
+metrics: [ndcg@10, mrr@10, recall@100, recall@1000]
+alpha: 0.05
+
+per_query_dir: results/per_query
+pairs:                        # run names without the split
+  - {label: "B vs A, natural", run: hi_fusion_B_interp_roman_natural, baseline: hi_fusion_A_interp_roman_natural}
+  - {label: "B vs A, rule", run: hi_fusion_B_interp_roman_rule, baseline: hi_fusion_A_interp_roman_rule}
+  - {label: "B vs A, human", run: hi_fusion_B_interp_roman_human, baseline: hi_fusion_A_interp_roman_human}
+  - {label: "C vs A, natural", run: hi_fusion_C_interp_roman_natural, baseline: hi_fusion_A_interp_roman_natural}
+  - {label: "C vs A, rule", run: hi_fusion_C_interp_roman_rule, baseline: hi_fusion_A_interp_roman_rule}
+  - {label: "C vs A, human", run: hi_fusion_C_interp_roman_human, baseline: hi_fusion_A_interp_roman_human}
+
+output: results/tables/fusion_compare_hi_test.md   # generated, never edited by hand
