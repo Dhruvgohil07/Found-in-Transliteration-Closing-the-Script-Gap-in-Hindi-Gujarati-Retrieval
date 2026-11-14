@@ -1,0 +1,32 @@
+# Phase 8 task 5: where do the hybrids gain and lose against their components? (review gate of
+# docs/plans/08-hybrid-fusion.md). Run: python -m scripts.fusion_wins --config configs/fusion_wins_hi.yaml
+experiment: fusion_wins_hi
+phase: 8
+lang: hi
+seed: 42
+
+split: test
+metric: ndcg@10
+length_edges: [8, 12]         # buckets of 1-8, 9-12 and 13+ words in the romanized query: about
+                              # thirds of the natural test set (78 / 106 / 66; median 10 words)
+query_sets:
+  roman_natural: data/romanized/{split}_queries_roman_natural.tsv
+  roman_rule: data/romanized/{split}_queries_roman_rule.tsv
+  roman_human: data/romanized/{split}_queries_roman_human_a.tsv   # test only (50 queries)
+
+per_query_dir: results/per_query
+hybrids:                      # run names without the split; {set} = the romanized query set
+  - label: "A, interpolation: normalized BM25 top-5 + off-the-shelf e5 top-1"
+    fused: hi_fusion_A_interp_{set}
+    lexical: hi_bm25_bt5_norm_{set}
+    dense: hi_e5base_{set}_bt1
+  - label: "B, interpolation: normalized BM25 top-5 + fine-tuned N top-1"
+    fused: hi_fusion_B_interp_{set}
+    lexical: hi_bm25_bt5_norm_{set}
+    dense: hi_e5ft_N_{set}_bt1
+  - label: "C, interpolation: dual index + off-the-shelf e5 top-1"
+    fused: hi_fusion_C_interp_{set}
+    lexical: hi_dual_rrf_{set}
+    dense: hi_e5base_{set}_bt1
+
+output: results/tables/fusion_wins_hi_test.md   # generated, never edited by hand
