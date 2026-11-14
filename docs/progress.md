@@ -1,9 +1,9 @@
 # Progress
 
 ## Current phase
-**Phase 6 — Doc-side romanization & normalization** (plan: docs/plans/06-doc-side-normalization.md);
-started 2026-11-09 on branch `phase-6/doc-side-normalization`; done and review gate approved
-(2026-11-11), not committed yet.
+**Phase 7 — Dense retriever fine-tuning** (plan: docs/plans/07-dense-finetune.md); started
+2026-11-12 on branch `phase-7/dense-finetune`; done and review gate approved (2026-11-14), not
+committed yet.
 
 ## Completed
 - [x] Project brief and conventions in CLAUDE.md
@@ -185,11 +185,53 @@ started 2026-11-09 on branch `phase-6/doc-side-normalization`; done and review g
   11 romanized rules; the dual index helps recall, not top precision; carried into Phase 8: the
   dual index and top-5 back-transliteration on the normalized native index
 
+- [x] Phase 6 merged into `main` (2026-11-12)
+- [x] Phase 7 task list agreed (2026-11-12): judged negatives, N / 50 / T, full fine-tuning,
+  timing first, checkpoint selection on a candidate pool (plan changes noted in docs/plans/07)
+
+- [x] Phase 7 task 1 (2026-11-12): training examples (`src/train/build_pairs.py`,
+  `scripts/build_train_pairs.py`): 2,467 (query, relevant, judged non-relevant) triples from
+  1,168 queries for each of N, 50 (584 / 584) and T, identical except for the query script;
+  no overlap with tune/test; 4 tests (197 in total)
+
+- [x] Phase 7 task 2 (2026-11-12): training code (`src/train/train_dense.py`,
+  `scripts/train_dense.py`, `configs/train_dense_50.yaml`): cached InfoNCE, scale 100 (e5's
+  τ = 0.01), lr 2e-5, batch 64, 3 epochs, no-duplicates batches; `datasets` 5.2.0 and
+  `accelerate` 1.15.0 added (approved). Timing: e5-base 2.1 s/step, ~4 min per run, peak
+  5.95 GB; 1 test (198 in total)
+
+- [x] Phase 7 task 3 (2026-11-13): e5-base trained on N, 50 and T for 6 epochs (a first 3-epoch
+  run put T's best at the last epoch; table kept in `results/tuning/select_checkpoint_hi_3epochs.csv`),
+  7.6–10.5 min each, a checkpoint per epoch in `models/` (git-ignored); loss logs versioned in
+  `results/training/`; 1 test (199 in total)
+- [x] Phase 7 task 4 (2026-11-13): checkpoints scored on a 28,740-passage tune candidate pool
+  (`scripts/select_checkpoint.py`); chosen by natural nDCG@10: N epoch 1, 50 epoch 5, T epoch 4
+  (pool natural 0.051 / 0.193 / 0.203 vs off-the-shelf 0.031; native 0.566 / 0.578 / 0.569 vs
+  0.573)
+
+- [x] Phase 7 task 5 (2026-11-14): corpus encoded with the chosen N / 50 / T checkpoints
+  (`configs/finetuned_dense_{N,50,T}.yaml`, ~11 min each) and 36 tune/test runs logged. Test
+  nDCG@10, off-the-shelf → N / 50 / T: native 0.607 → 0.601 / 0.583 / 0.547; natural 0.013 →
+  0.028 / 0.199 / 0.226; human 0.011 → 0.003 / 0.112 / 0.160; natural with top-1
+  back-transliteration 0.561 → 0.577 / 0.551 / 0.522
+
+- [x] Phase 7 task 6 (2026-11-14): tables `results/tables/dense_ft_hi_test.md`,
+  `dense_ft_hi_tune.md` and the forgetting check `dense_ft_native_hi_test.md` (new generic
+  `scripts/compare_runs.py`). Fine-tuning helps raw romanized queries (T natural 0.2259, human
+  0.1595, both significant) but closes only 31–36% of the gap vs 92% for back-transliteration;
+  T costs native performance (−0.060, p < 0.001), 50 does not significantly (−0.024, p = 0.060).
+  "What we found" written in docs/plans/07-dense-finetune.md
+
+- [x] Phase 7 review gate approved (2026-11-14): fine-tuning helps raw romanized queries but does
+  not beat back-transliteration; T forgets native, 50 does not significantly; carried into
+  Phase 8: off-the-shelf (or N) dense + top-1 back-transliteration, and fine-tuned T on raw
+  romanized queries as a fusion candidate
+
 ## In progress
 - (none)
 
 ## Next up
-- Commit Phase 6 (when asked), then Phase 7 — dense fine-tuning: agree on the task list and files
+- Commit Phase 7 (when asked), then Phase 8 — hybrid fusion: agree on the task list and files
 
 ## Open decisions / questions
 - Languages → decided: Hindi core, Gujarati as a separate droppable phase (Phase 10,
@@ -227,8 +269,9 @@ started 2026-11-09 on branch `phase-6/doc-side-normalization`; done and review g
 - Terrier stemming and stopwords → decided: both off for every index and run (the English
   defaults change romanized Hindi, `roy` -> `roi`, and do nothing for Devanagari)
 - Shallow judgments → decided: Judged@10 is logged with every run as a diagnostic
-- Phase 7 query length → open: train queries reach 41 e5 tokens, so the 32-token query
-  length from the Phase 1 benchmark is too short; plan for about 48 in Phase 7
+- Phase 7 query length → decided: 64 tokens at search time, as the Phase 4 dense baseline (the
+  longest query of any set is 56 tokens with the prefix, a rule test query; 48 would cut 4 test
+  rule queries); training does not cut queries (the trainer uses 256 for every column)
 - Natural romanization → decided: Gemini API (`google-genai`), fixed prompt, temperature 0,
   output frozen (IndicXlit ruled out: Phase 5 uses it to undo romanization)
 - Rule-based romanization → decided: Uroman, called as in the paper's code (`lang=hin`,
@@ -271,8 +314,14 @@ started 2026-11-09 on branch `phase-6/doc-side-normalization`; done and review g
 - Significance correction → decided: paired t-test with Bonferroni, as in the paper
 - Paper's code repository → decided: consult it at the start of the phase that needs a
   missing detail (Uroman options in Phase 3, training setup in Phase 7), not upfront
-- Fine-tuning setups → open: the paper compares native-only (N), 50/50 mixed (50) and
-  romanized-only (T) training; consider mirroring all three in Phase 7
+- Fine-tuning setups → decided: all three of the paper's set-ups, native-only (N), 50/50 mixed
+  (50) and romanized-only (T), with natural romanizations; full fine-tuning of e5-base
+- Fine-tuned checkpoints → decided: N epoch 1, 50 epoch 5, T epoch 4 of 6 (natural nDCG@10 on
+  the tune candidate pool, rule fixed before the run)
+- Training libraries → decided: `datasets` and `accelerate` added (sentence-transformers'
+  `[train]` extra, needed by its trainer), pinned in requirements.txt and listed in SPECS §3
+- Hard negatives → decided: MIRACL's judged non-relevant passages (no hidden positives);
+  BM25 negatives only as an optional ablation
 - Back-transliteration tool → decided: IndicXlit in Docker (Python 3.8, pinned image in
   `docker/indicxlit/`), run once and frozen; fairseq does not build on Windows/Python 3.11,
   no reliable HF substitute exists, and Docker Desktop was already installed
