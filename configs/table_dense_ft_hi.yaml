@@ -1,0 +1,43 @@
+# Phase 7 task 6: test-split table of the fine-tuned dense models next to the Phase 4 dense baselines
+# and Phase 5 (docs/plans/07-dense-finetune.md).
+# Run: python -m scripts.method_table --config configs/table_dense_ft_hi.yaml
+experiment: table_dense_ft_hi
+phase: 7
+lang: hi
+seed: 42
+
+split: test
+query_sets: [roman_natural, roman_rule, roman_human]
+metrics: [ndcg@10, mrr@10, recall@100, recall@1000]
+gap_metric: ndcg@10
+alpha: 0.05                   # Bonferroni over every method-vs-romanized comparison in the table
+
+per_query_dir: results/per_query
+groups:                       # run names without the split; {set} = the romanized query set
+  - label: Dense, romanized query as typed (off-the-shelf e5-base vs fine-tuned on N / 50 / T)
+    native: hi_e5base_native
+    romanized: hi_e5base_{set}
+    reference:                # extra column: p vs Phase 5's best dense method
+      label: Phase 5
+      run: hi_e5base_{set}_bt1
+    methods:
+      "fine-tuned N (native queries)": hi_e5ft_N_{set}
+      "fine-tuned 50 (half native, half romanized)": hi_e5ft_50_{set}
+      "fine-tuned T (romanized queries)": hi_e5ft_T_{set}
+    also_show:
+      "native, fine-tuned N": hi_e5ft_N_native
+      "native, fine-tuned 50": hi_e5ft_50_native
+      "native, fine-tuned T": hi_e5ft_T_native
+  - label: Dense, top-1 back-transliterated query (Phase 5) with the off-the-shelf and fine-tuned models
+    native: hi_e5base_native
+    romanized: hi_e5base_{set}
+    reference:
+      label: Phase 5
+      run: hi_e5base_{set}_bt1
+    methods:
+      "Phase 5: off-the-shelf + top-1 back-transliteration": hi_e5base_{set}_bt1
+      "fine-tuned N + top-1 back-transliteration": hi_e5ft_N_{set}_bt1
+      "fine-tuned 50 + top-1 back-transliteration": hi_e5ft_50_{set}_bt1
+      "fine-tuned T + top-1 back-transliteration": hi_e5ft_T_{set}_bt1
+
+output: results/tables/dense_ft_hi_test.md   # generated, never edited by hand

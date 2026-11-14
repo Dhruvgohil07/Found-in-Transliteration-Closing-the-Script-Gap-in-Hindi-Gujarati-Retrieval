@@ -1,0 +1,19 @@
+# Phase 7 task 6: did fine-tuning change NATIVE-query performance? (the catastrophic-forgetting check
+# of docs/plans/07-dense-finetune.md). Run: python -m scripts.compare_runs --config configs/compare_dense_ft_native_hi.yaml
+experiment: compare_dense_ft_native_hi
+phase: 7
+lang: hi
+seed: 42
+
+split: test
+description: "Native test queries: each fine-tuned model against the off-the-shelf e5-base."
+metrics: [ndcg@10, mrr@10, recall@100, recall@1000]
+alpha: 0.05
+
+per_query_dir: results/per_query
+pairs:                        # run names without the split
+  - {label: fine-tuned N vs off-the-shelf, run: hi_e5ft_N_native, baseline: hi_e5base_native}
+  - {label: fine-tuned 50 vs off-the-shelf, run: hi_e5ft_50_native, baseline: hi_e5base_native}
+  - {label: fine-tuned T vs off-the-shelf, run: hi_e5ft_T_native, baseline: hi_e5base_native}
+
+output: results/tables/dense_ft_native_hi_test.md   # generated, never edited by hand
