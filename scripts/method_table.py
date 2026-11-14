@@ -23,6 +23,13 @@ Two optional group keys (Phase 6):
 - ``also_show: {label: run}`` adds rows after the native run, with metrics only
   (e.g. a second upper bound).
 
+And one for Phase 8, where the question is whether a method beats the best
+single method rather than the romanized baseline:
+
+- ``reference: {..., bonferroni: true}`` corrects the "p vs <label>" column too:
+  Bonferroni over every method-vs-reference comparison of such groups in the
+  table († marks p < alpha / m).
+
 All comparisons use the same queries: the native run is restricted to the
 romanized set's queries (the hand-romanized set covers 50 test queries).
 The Markdown file is generated; its numbers are never typed by hand.
@@ -49,6 +56,9 @@ def main() -> None:
 
     n_comparisons = sum(len(g["methods"]) for g in cfg["groups"]) * len(cfg["query_sets"])
     threshold = cfg["alpha"] / n_comparisons
+    # comparisons with a corrected reference: every method except the reference run itself
+    n_ref = sum(sum(pattern != g["reference"]["run"] for pattern in g["methods"].values())
+                for g in cfg["groups"] if g.get("reference", {}).get("bonferroni")) * len(cfg["query_sets"])
     lines = [
         f"# {cfg['experiment']}: {cfg['lang']} {split} split",
         "",
@@ -61,6 +71,10 @@ def main() -> None:
         f"* means p < {cfg['alpha']}/{n_comparisons} = {threshold:.4f}. p vs native: paired t-test,",
         "no correction (is the remaining difference to native detectable?).",
     ]
+    if n_ref:
+        lines[-1] += (f" p vs the reference: paired t-test, Bonferroni over the table's {n_ref} "
+                      f"method-vs-reference comparisons; † means p < {cfg['alpha']}/{n_ref} = "
+                      f"{cfg['alpha'] / n_ref:.4f}; the difference to the reference is in brackets.")
     for group in cfg["groups"]:
         lines += ["", f"## {group['label']}"]
         native_all = per_query(group["native"])
@@ -85,7 +99,13 @@ def main() -> None:
                 vs_ref = ""
                 if reference:
                     is_ref = name == reference["run"].format(set=qset)
-                    vs_ref = " (reference) |" if is_ref else f" {compare(method, ref, gm).p:.3f} |"
+                    c_ref = compare(method, ref, gm)
+                    if reference.get("bonferroni"):   # the direction matters: show the difference
+                        dagger = "†" if bonferroni_significant(c_ref.p, n_ref, cfg["alpha"]) else ""
+                        shown_p = f"{c_ref.p:.3f}{dagger} ({c_ref.diff:+.4f})"
+                    else:
+                        shown_p = f"{c_ref.p:.3f}"
+                    vs_ref = " (reference) |" if is_ref else f" {shown_p} |"
                 lines.append(f"| {label} | {' | '.join(f'{method[m].mean():.4f}' for m in metrics)} | "
                              f"{recovered:.1%} | {vs_roman.p:.1e}{star} | {vs_native.p:.3f} |{vs_ref}")
             lines.append(f"| native (upper bound) | {' | '.join(f'{native[m].mean():.4f}' for m in metrics)} "
