@@ -45,6 +45,7 @@ This project **reproduces that script gap** and **builds and compares methods th
 | Datasets | `ir_datasets` | decided |
 | BM25 / indexing | PyTerrier (Terrier BM25, Java 17): `utf` tokeniser, no stemming or stopwords, IDF floored at 0, k1/b tuned on tune | decided (Phase 4) |
 | Dense retrieval | sentence-transformers + PyTorch (CUDA) | decided |
+| Dense fine-tuning | sentence-transformers trainer with `CachedMultipleNegativesRankingLoss`; needs `datasets` + `accelerate` (its `[train]` extra) | decided (Phase 7) |
 | Starting dense model | `intfloat/multilingual-e5-base` (main); `-small` for quick debugging runs; `BAAI/bge-m3` off-the-shelf only, as a reference point to the paper (it does not fit fine-tuning in 8 GB) | decided (Phase 1) |
 | Vector search | exact search over cached embeddings (NumPy / torch); FAISS only if needed | decided |
 | Back-transliteration (Latin → native) | IndicXlit (AI4Bharat, `ai4bharat-transliteration` 1.1.3) in a Docker container (`docker/indicxlit/`, Python 3.8); run once, candidates frozen | decided (Phase 5) |
@@ -83,6 +84,7 @@ configs/              one YAML file per experiment
 results/
   runs/               TREC run files (git-ignored: 1-17 MB each, rebuilt from their configs)
   tuning/             parameter-search tables (tune split only)
+  training/           training logs of the fine-tuned models (loss per logging step)
   tables/             generated result tables, e.g. the script-gap table (never edited by hand)
   per_query/          per-query metric CSVs
   figures/
