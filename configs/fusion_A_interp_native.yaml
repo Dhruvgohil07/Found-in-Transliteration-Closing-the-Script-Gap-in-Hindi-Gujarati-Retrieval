@@ -1,0 +1,32 @@
+# Phase 9 task 1: the final system (hybrid A, interpolation) on NATIVE queries
+# (docs/plans/09-eval-error-analysis.md). A user may also type in Devanagari: then there is
+# nothing to back-transliterate, so A's two routes become the normalized native BM25 index and
+# the off-the-shelf e5 model, both with the native query. Same alpha as configs/fusion_A_interp.yaml
+# (chosen on tune in Phase 8); nothing is tuned here.
+# Run: python -m scripts.run_fusion --config configs/fusion_A_interp_native.yaml
+experiment: fusion_A_interp_native_hi
+phase: 9
+lang: hi
+seed: 42                      # fusion is deterministic; kept for the config convention
+method: fusion_A_interp       # same system as configs/fusion_A_interp.yaml: hi_fusion_A_interp_native_{split}
+
+components:                   # lexical first
+  - configs/docside_bm25_norm.yaml       # normalized native index, native query (Phase 6)
+  - configs/baseline_dense.yaml          # off-the-shelf e5, native query (Phase 4)
+fusion:
+  method: interp
+  alpha: 0.3                  # weight of the lexical run, as chosen for hybrid A in Phase 8
+top_k: 1000
+
+compare_with:                 # printed next to the fused run, not fused
+  - configs/baseline_dense.yaml          # dense native: the strongest native baseline
+metric: ndcg@10
+
+splits: [tune, test]
+qrels: data/processed/{split}_qrels.tsv
+query_sets:
+  native: data/processed/{split}_queries.tsv
+
+output:
+  run_dir: results/runs
+  per_query_dir: results/per_query

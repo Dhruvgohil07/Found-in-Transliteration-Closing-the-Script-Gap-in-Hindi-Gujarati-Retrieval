@@ -1,0 +1,49 @@
+# Phase 9 task 2: the final results table, one representative run per method and phase, on test
+# (docs/plans/09-eval-error-analysis.md). Run: python -m scripts.final_table --config configs/final_table_hi.yaml
+experiment: final_table_hi
+phase: 9
+lang: hi
+seed: 42
+
+split: test
+query_sets: [native, roman_natural, roman_rule, roman_human]
+metrics: [ndcg@10, mrr@10, recall@100, recall@1000]
+per_query_dir: results/per_query
+
+gap:                          # one pair of baselines for every row, so GapRecovered is comparable
+  metric: ndcg@10
+  native: hi_e5base_native    # the strongest native single-method baseline (Phase 4 dense)
+  romanized: hi_e5base_{set}  # the same model with the romanized queries
+
+test_metric: ndcg@10          # paired t-test per cell against each reference run of its query set
+alpha: 0.05                   # Bonferroni over every (cell, reference) comparison in the table
+references:
+  - label: BM25 romanized     # the Phase 4 gap baseline
+    mark: "*"
+    runs: {roman_natural: hi_bm25_roman_natural, roman_rule: hi_bm25_roman_rule, roman_human: hi_bm25_roman_human}
+  - label: the best single method   # romanized sets: Phase 5 dense + top-1 back-transliteration;
+    mark: "†"                       # native: Phase 4 dense with the native query
+    runs: {native: hi_e5base_native, roman_natural: hi_e5base_roman_natural_bt1,
+           roman_rule: hi_e5base_roman_rule_bt1, roman_human: hi_e5base_roman_human_bt1}
+latex_marks: {"*": "*", "†": "\\dagger"}
+
+rows:                         # runs: native = run name with native queries, roman = pattern for the romanized sets
+  - {phase: 4, label: "BM25", runs: {native: hi_bm25_native, roman: "hi_bm25_{set}"}}
+  - {phase: 4, label: "Dense e5", runs: {native: hi_e5base_native, roman: "hi_e5base_{set}"}}
+  - {phase: 5, label: "BM25 + top-5 back-transliteration", runs: {roman: "hi_bm25_bt5_{set}"}}
+  - {phase: 5, label: "Dense e5 + top-1 back-transliteration", runs: {roman: "hi_e5base_{set}_bt1"}}
+  - {phase: 6, label: "Normalized BM25 (+ top-5 back-transliteration)",
+     runs: {native: hi_bm25_norm_native, roman: "hi_bm25_bt5_norm_{set}"}}
+  - {phase: 6, label: "Romanized 4-gram index", runs: {roman: "hi_bm25_romindex_ng4_{set}"}}
+  - {phase: 6, label: "Dual index (RRF)", runs: {roman: "hi_dual_rrf_{set}"}}
+  - {phase: 7, label: "Fine-tuned T (raw query)", runs: {native: hi_e5ft_T_native, roman: "hi_e5ft_T_{set}"}}
+  - {phase: 7, label: "Fine-tuned N (+ top-1 back-transliteration)",
+     runs: {native: hi_e5ft_N_native, roman: "hi_e5ft_N_{set}_bt1"}}
+  - {phase: 8, label: "Hybrid A (final system)", runs: {native: hi_fusion_A_interp_native, roman: "hi_fusion_A_interp_{set}"}}
+  - {phase: 8, label: "Hybrid C (dual index + dense)", runs: {roman: "hi_fusion_C_interp_{set}"}}
+  - {phase: 8, label: "Hybrid D (no transliteration model)", runs: {roman: "hi_fusion_D_interp_{set}"}}
+
+output:                       # generated, never edited by hand
+  csv: results/final_table.csv
+  markdown: results/tables/final_table_hi.md
+  latex: results/tables/final_table_hi.tex

@@ -1,0 +1,251 @@
+qid	missed_words	spelling	english_words	code_mixed	n_words	length	named_entity
+1004960#0	0	0 missed	power	code-mixed	11	9-12 words	
+1006614#0	0	0 missed		no English word	7	1-8 words	entity
+100764#0	1	1 missed		no English word	14	13+ words	
+1008914#0	0	0 missed		no English word	10	9-12 words	
+100955#0	2	2+ missed		no English word	6	1-8 words	
+100978#0	0	0 missed		no English word	12	9-12 words	
+1012378#0	0	0 missed		no English word	7	1-8 words	no entity
+103353#0	1	1 missed	great	code-mixed	7	1-8 words	entity
+1056884#0	0	0 missed		no English word	7	1-8 words	no entity
+10907#0	2	2+ missed		no English word	10	9-12 words	
+1092597#0	0	0 missed		no English word	8	1-8 words	
+1093041#0	1	1 missed		no English word	13	13+ words	no entity
+1093848#0	0	0 missed		no English word	10	9-12 words	
+1105470#0	2	2+ missed	engineering	code-mixed	8	1-8 words	
+11058#0	1	1 missed		no English word	9	9-12 words	
+1123147#0	0	0 missed	cricket	code-mixed	11	9-12 words	
+1125426#0	0	0 missed		no English word	5	1-8 words	
+1129369#0	0	0 missed		no English word	8	1-8 words	entity
+1142514#0	0	0 missed	missile system missile	code-mixed	16	13+ words	entity
+1148591#0	0	0 missed		no English word	9	9-12 words	
+1151412#0	2	2+ missed		no English word	9	9-12 words	entity
+1157146#0	0	0 missed		no English word	19	13+ words	
+1160750#0	3	2+ missed	design	code-mixed	9	9-12 words	no entity
+1167291#0	0	0 missed		no English word	8	1-8 words	no entity
+1170317#0	0	0 missed		no English word	7	1-8 words	no entity
+1174018#0	0	0 missed		no English word	15	13+ words	entity
+1177052#0	2	2+ missed		no English word	14	13+ words	no entity
+1179431#0	0	0 missed		no English word	7	1-8 words	
+11820#0	0	0 missed		no English word	11	9-12 words	entity
+1207940#0	0	0 missed		no English word	7	1-8 words	
+1231587#0	1	1 missed	friends television series season	code-mixed	8	1-8 words	
+1232989#0	1	1 missed		no English word	8	1-8 words	no entity
+1240100#0	0	0 missed	cricket	code-mixed	9	9-12 words	
+1270408#0	0	0 missed		no English word	8	1-8 words	
+1272354#0	0	0 missed		no English word	9	9-12 words	
+1278892#0	0	0 missed		no English word	9	9-12 words	no entity
+1286330#0	1	1 missed	company company	code-mixed	19	13+ words	
+1289278#0	0	0 missed		no English word	7	1-8 words	
+13085#0	0	0 missed		no English word	7	1-8 words	
+1320852#0	1	1 missed	stock	code-mixed	10	9-12 words	no entity
+1328536#0	1	1 missed	league	code-mixed	11	9-12 words	entity
+1329429#0	0	0 missed		no English word	12	9-12 words	no entity
+1336398#0	0	0 missed		no English word	7	1-8 words	
+1336456#0	0	0 missed		no English word	8	1-8 words	no entity
+1346725#0	1	1 missed	boss film	code-mixed	6	1-8 words	
+1351517#0	1	1 missed		no English word	10	9-12 words	
+14145#0	0	0 missed		no English word	8	1-8 words	
+143310#0	0	0 missed		no English word	11	9-12 words	
+165041#0	2	2+ missed	wings fire	code-mixed	8	1-8 words	
+171230#0	1	1 missed		no English word	18	13+ words	no entity
+1776#0	0	0 missed		no English word	13	13+ words	no entity
+179243#0	0	0 missed		no English word	10	9-12 words	
+181933#0	0	0 missed		no English word	8	1-8 words	
+182462#0	0	0 missed		no English word	10	9-12 words	entity
+183449#0	0	0 missed		no English word	12	9-12 words	
+184437#0	2	2+ missed	lead battery active elements	code-mixed	7	1-8 words	no entity
+1845#0	0	0 missed		no English word	8	1-8 words	no entity
+188524#0	0	0 missed		no English word	14	13+ words	entity
+189229#0	1	1 missed		no English word	14	13+ words	no entity
+189885#0	0	0 missed		no English word	10	9-12 words	entity
+190092#0	0	0 missed	degree	code-mixed	12	9-12 words	
+190817#0	0	0 missed		no English word	10	9-12 words	
+191382#0	0	0 missed		no English word	13	13+ words	entity
+19884#0	0	0 missed		no English word	8	1-8 words	
+20617#0	0	0 missed		no English word	9	9-12 words	
+221325#0	0	0 missed		no English word	9	9-12 words	
+221817#0	0	0 missed		no English word	13	13+ words	
+222415#0	0	0 missed	railway station	code-mixed	16	13+ words	entity
+228762#0	2	2+ missed		no English word	9	9-12 words	entity
+228776#0	0	0 missed		no English word	7	1-8 words	entity
+228821#0	0	0 missed		no English word	10	9-12 words	no entity
+228852#0	0	0 missed		no English word	10	9-12 words	no entity
+228881#0	0	0 missed		no English word	11	9-12 words	
+228911#0	0	0 missed		no English word	9	9-12 words	
+229221#0	0	0 missed		no English word	14	13+ words	no entity
+229301#0	1	1 missed		no English word	16	13+ words	entity
+229394#0	0	0 missed		no English word	9	9-12 words	
+229540#0	2	2+ missed		no English word	10	9-12 words	
+229658#0	3	2+ missed		no English word	18	13+ words	
+229676#0	0	0 missed		no English word	7	1-8 words	
+229749#0	0	0 missed		no English word	10	9-12 words	
+229777#0	0	0 missed		no English word	12	9-12 words	
+229856#0	0	0 missed		no English word	8	1-8 words	
+229883#0	1	1 missed		no English word	13	13+ words	
+229949#0	0	0 missed	party	code-mixed	9	9-12 words	
+229991#0	2	2+ missed		no English word	10	9-12 words	
+230130#0	0	0 missed		no English word	13	13+ words	entity
+230156#0	0	0 missed		no English word	12	9-12 words	entity
+230221#0	0	0 missed		no English word	11	9-12 words	no entity
+230231#0	0	0 missed		no English word	9	9-12 words	
+230313#0	1	1 missed		no English word	12	9-12 words	entity
+230365#0	1	1 missed		no English word	7	1-8 words	no entity
+230374#0	0	0 missed		no English word	5	1-8 words	entity
+230382#0	0	0 missed		no English word	9	9-12 words	entity
+230408#0	2	2+ missed		no English word	9	9-12 words	entity
+230590#0	0	0 missed		no English word	6	1-8 words	
+230791#0	1	1 missed		no English word	8	1-8 words	entity
+230815#0	0	0 missed		no English word	5	1-8 words	no entity
+230816#0	1	1 missed		no English word	7	1-8 words	
+230981#0	0	0 missed		no English word	6	1-8 words	
+231114#0	0	0 missed		no English word	7	1-8 words	
+231164#0	0	0 missed		no English word	9	9-12 words	
+231176#0	0	0 missed		no English word	8	1-8 words	
+231248#0	0	0 missed		no English word	8	1-8 words	
+231291#0	0	0 missed		no English word	7	1-8 words	
+231360#0	0	0 missed		no English word	14	13+ words	
+231377#0	0	0 missed	second	code-mixed	7	1-8 words	
+231425#0	2	2+ missed	test cricket	code-mixed	17	13+ words	entity
+231582#0	1	1 missed		no English word	4	1-8 words	entity
+231597#0	1	1 missed		no English word	12	9-12 words	
+231611#0	1	1 missed		no English word	7	1-8 words	
+231680#0	0	0 missed	league	code-mixed	12	9-12 words	
+23653#0	1	1 missed		no English word	13	13+ words	
+23770#0	1	1 missed	film	code-mixed	10	9-12 words	
+23895#0	0	0 missed		no English word	10	9-12 words	entity
+23966#0	1	1 missed	captain	code-mixed	20	13+ words	
+24021#0	0	0 missed		no English word	7	1-8 words	entity
+249020#0	2	2+ missed		no English word	11	9-12 words	no entity
+25966#0	0	0 missed		no English word	6	1-8 words	no entity
+318934#0	0	0 missed		no English word	16	13+ words	
+32389#0	0	0 missed		no English word	10	9-12 words	
+33877#0	0	0 missed		no English word	10	9-12 words	
+34895#0	1	1 missed		no English word	12	9-12 words	
+34984#0	0	0 missed		no English word	11	9-12 words	
+381392#0	0	0 missed		no English word	10	9-12 words	
+382416#0	2	2+ missed	budget	code-mixed	16	13+ words	
+38524#0	1	1 missed	mere film	code-mixed	10	9-12 words	
+400034#0	0	0 missed		no English word	10	9-12 words	
+400075#0	1	1 missed	tiger	code-mixed	9	9-12 words	
+400113#0	1	1 missed	oxygen	code-mixed	16	13+ words	no entity
+41553#0	0	0 missed		no English word	8	1-8 words	
+426817#0	3	2+ missed	internet phone	code-mixed	14	13+ words	
+427081#0	0	0 missed		no English word	7	1-8 words	
+432353#0	2	2+ missed		no English word	8	1-8 words	
+433508#0	2	2+ missed		no English word	18	13+ words	
+434308#0	1	1 missed	pilot project launch	code-mixed	15	13+ words	
+44629#0	1	1 missed		no English word	16	13+ words	entity
+45210#0	2	2+ missed	exchange	code-mixed	13	13+ words	no entity
+45776#0	0	0 missed		no English word	9	9-12 words	
+459864#0	0	0 missed	plastic	code-mixed	15	13+ words	no entity
+46546#0	0	0 missed	petrol	code-mixed	11	9-12 words	
+474928#0	2	2+ missed		no English word	9	9-12 words	entity
+474986#0	1	1 missed		no English word	12	9-12 words	no entity
+475002#0	0	0 missed		no English word	9	9-12 words	no entity
+479601#0	0	0 missed		no English word	5	1-8 words	
+480760#0	5	2+ missed	year award company	code-mixed	19	13+ words	
+484420#0	2	2+ missed		no English word	17	13+ words	
+485691#0	0	0 missed		no English word	7	1-8 words	no entity
+498040#0	1	1 missed		no English word	14	13+ words	
+504917#0	1	1 missed	hotel	code-mixed	12	9-12 words	
+509673#0	2	2+ missed		no English word	10	9-12 words	entity
+51132#0	1	1 missed	training	code-mixed	9	9-12 words	entity
+51955#0	1	1 missed	record	code-mixed	21	13+ words	
+523542#0	0	0 missed		no English word	7	1-8 words	
+547030#0	1	1 missed		no English word	19	13+ words	no entity
+548753#0	0	0 missed		no English word	8	1-8 words	entity
+552986#0	0	0 missed		no English word	8	1-8 words	
+560685#0	1	1 missed		no English word	12	9-12 words	
+57186#0	0	0 missed		no English word	6	1-8 words	no entity
+584627#0	3	2+ missed	launch	code-mixed	13	13+ words	
+596559#0	1	1 missed		no English word	18	13+ words	no entity
+596773#0	1	1 missed	miss world	code-mixed	13	13+ words	
+6005#0	0	0 missed	oxygen	code-mixed	8	1-8 words	no entity
+60482#0	1	1 missed		no English word	7	1-8 words	entity
+60526#0	1	1 missed		no English word	11	9-12 words	
+608133#0	0	0 missed		no English word	12	9-12 words	no entity
+615021#0	1	1 missed		no English word	10	9-12 words	entity
+625160#0	0	0 missed	band	code-mixed	13	13+ words	
+626925#0	3	2+ missed	degree research	code-mixed	12	9-12 words	
+632349#0	2	2+ missed		no English word	15	13+ words	no entity
+63570#0	0	0 missed		no English word	12	9-12 words	no entity
+643361#0	2	2+ missed		no English word	13	13+ words	
+64944#0	0	0 missed		no English word	12	9-12 words	
+64950#0	1	1 missed		no English word	6	1-8 words	entity
+653507#0	2	2+ missed		no English word	24	13+ words	
+655479#0	0	0 missed	star	code-mixed	13	13+ words	
+660359#0	0	0 missed	star	code-mixed	13	13+ words	
+661917#0	0	0 missed		no English word	14	13+ words	
+664648#0	2	2+ missed		no English word	9	9-12 words	entity
+670188#0	1	1 missed		no English word	6	1-8 words	entity
+674967#0	0	0 missed	film film	code-mixed	12	9-12 words	
+677911#0	0	0 missed	star	code-mixed	15	13+ words	
+69902#0	1	1 missed		no English word	15	13+ words	
+699070#0	0	0 missed		no English word	12	9-12 words	no entity
+703838#0	1	1 missed		no English word	13	13+ words	
+707104#0	0	0 missed		no English word	15	13+ words	
+71502#0	0	0 missed		no English word	10	9-12 words	no entity
+723420#0	3	2+ missed		no English word	11	9-12 words	
+727909#0	0	0 missed		no English word	13	13+ words	entity
+72905#0	0	0 missed	cement	code-mixed	13	13+ words	no entity
+731409#0	0	0 missed	mission commission	code-mixed	15	13+ words	
+735588#0	1	1 missed		no English word	16	13+ words	no entity
+735999#0	3	2+ missed		no English word	13	13+ words	no entity
+741349#0	0	0 missed		no English word	8	1-8 words	
+743693#0	0	0 missed		no English word	9	9-12 words	no entity
+743770#0	1	1 missed		no English word	12	9-12 words	no entity
+744579#0	2	2+ missed		no English word	7	1-8 words	
+74529#0	1	1 missed		no English word	8	1-8 words	
+7469#0	0	0 missed		no English word	7	1-8 words	no entity
+751900#0	1	1 missed	cell	code-mixed	12	9-12 words	
+753875#0	0	0 missed	iron lady	code-mixed	12	9-12 words	
+760190#0	0	0 missed		no English word	14	13+ words	
+766592#0	0	0 missed		no English word	12	9-12 words	
+766823#0	0	0 missed		no English word	10	9-12 words	
+769779#0	0	0 missed		no English word	9	9-12 words	
+773410#0	0	0 missed		no English word	8	1-8 words	entity
+774649#0	1	1 missed		no English word	9	9-12 words	entity
+781153#0	1	1 missed		no English word	15	13+ words	no entity
+788010#0	0	0 missed		no English word	10	9-12 words	
+789214#0	1	1 missed		no English word	10	9-12 words	
+789913#0	0	0 missed		no English word	9	9-12 words	
+796476#0	1	1 missed		no English word	9	9-12 words	
+797350#0	1	1 missed	cell	code-mixed	10	9-12 words	
+797393#0	0	0 missed		no English word	9	9-12 words	
+797545#0	0	0 missed		no English word	7	1-8 words	entity
+807128#0	2	2+ missed		no English word	14	13+ words	
+808231#0	1	1 missed	penalty corner	code-mixed	8	1-8 words	
+809041#0	0	0 missed		no English word	8	1-8 words	entity
+809314#0	1	1 missed		no English word	13	13+ words	
+821572#0	1	1 missed		no English word	10	9-12 words	
+834198#0	1	1 missed		no English word	8	1-8 words	
+837664#0	1	1 missed		no English word	6	1-8 words	
+841008#0	1	1 missed		no English word	11	9-12 words	
+851639#0	1	1 missed		no English word	7	1-8 words	
+865662#0	0	0 missed		no English word	8	1-8 words	
+868259#0	0	0 missed		no English word	8	1-8 words	
+868530#0	0	0 missed	online bank	code-mixed	7	1-8 words	no entity
+868945#0	0	0 missed		no English word	15	13+ words	
+881715#0	1	1 missed		no English word	9	9-12 words	entity
+883571#0	1	1 missed	book	code-mixed	10	9-12 words	entity
+887943#0	0	0 missed		no English word	11	9-12 words	entity
+890150#0	0	0 missed	petrol	code-mixed	13	13+ words	
+896356#0	1	1 missed		no English word	7	1-8 words	
+902061#0	0	0 missed	portfolio	code-mixed	22	13+ words	entity
+927965#0	0	0 missed		no English word	10	9-12 words	
+93266#0	0	0 missed		no English word	10	9-12 words	
+939797#0	0	0 missed		no English word	13	13+ words	entity
+94289#0	0	0 missed	star	code-mixed	9	9-12 words	no entity
+946425#0	0	0 missed		no English word	8	1-8 words	
+953321#0	3	2+ missed		no English word	8	1-8 words	
+95604#0	0	0 missed		no English word	17	13+ words	no entity
+97225#0	0	0 missed		no English word	10	9-12 words	
+979199#0	1	1 missed	cancer	code-mixed	9	9-12 words	
+981991#0	2	2+ missed		no English word	10	9-12 words	
+983815#0	0	0 missed		no English word	7	1-8 words	no entity
+984819#0	1	1 missed		no English word	9	9-12 words	
+985205#0	1	1 missed	status	code-mixed	12	9-12 words	no entity
+98561#0	0	0 missed		no English word	10	9-12 words	no entity
+992801#0	0	0 missed		no English word	13	13+ words	
+99392#0	1	1 missed		no English word	7	1-8 words	

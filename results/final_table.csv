@@ -1,0 +1,43 @@
+method,phase,query_set,n_queries,ndcg@10,mrr@10,recall@100,recall@1000,diff vs the best single method,p vs the best single method,sig vs the best single method,run_file,config,gap_recovered,diff vs BM25 romanized,p vs BM25 romanized,sig vs BM25 romanized
+BM25,4,native,250,0.3810,0.4016,0.7524,0.8888,-0.2257,0.0000,True,results/runs/hi_bm25_native_test.trec,configs/baseline_bm25.yaml,,,,
+BM25,4,roman_natural,250,0.0014,0.0007,0.0233,0.0483,-0.5593,0.0000,True,results/runs/hi_bm25_roman_natural_test.trec,configs/baseline_bm25.yaml,-0.0200,,,
+BM25,4,roman_rule,250,0.0017,0.0010,0.0100,0.0170,-0.4889,0.0000,True,results/runs/hi_bm25_roman_rule_test.trec,configs/baseline_bm25.yaml,0.0028,,,
+BM25,4,roman_human,50,0.0000,0.0000,0.0000,0.0000,-0.5496,0.0000,True,results/runs/hi_bm25_roman_human_test.trec,configs/baseline_bm25.yaml,-0.0174,,,
+Dense e5,4,native,250,0.6067,0.6301,0.9412,0.9973,,,,results/runs/hi_e5base_native_test.trec,configs/baseline_dense.yaml,,,,
+Dense e5,4,roman_natural,250,0.0133,0.0148,0.0551,0.1405,-0.5475,0.0000,True,results/runs/hi_e5base_roman_natural_test.trec,configs/baseline_dense.yaml,0.0000,0.0119,0.0435,False
+Dense e5,4,roman_rule,250,0.0000,0.0000,0.0000,0.0130,-0.4907,0.0000,True,results/runs/hi_e5base_roman_rule_test.trec,configs/baseline_dense.yaml,0.0000,-0.0017,0.3183,False
+Dense e5,4,roman_human,50,0.0106,0.0133,0.0460,0.1067,-0.5390,0.0000,True,results/runs/hi_e5base_roman_human_test.trec,configs/baseline_dense.yaml,0.0000,0.0106,0.1660,False
+BM25 + top-5 back-transliteration,5,roman_natural,250,0.3737,0.3962,0.7301,0.8874,-0.1870,0.0000,True,results/runs/hi_bm25_bt5_roman_natural_test.trec,configs/backtranslit_topk_bm25.yaml,0.6074,0.3723,0.0000,True
+BM25 + top-5 back-transliteration,5,roman_rule,250,0.3365,0.3500,0.6641,0.8531,-0.1541,0.0000,True,results/runs/hi_bm25_bt5_roman_rule_test.trec,configs/backtranslit_topk_bm25.yaml,0.5547,0.3348,0.0000,True
+BM25 + top-5 back-transliteration,5,roman_human,50,0.3294,0.3322,0.6497,0.8790,-0.2202,0.0014,False,results/runs/hi_bm25_bt5_roman_human_test.trec,configs/backtranslit_topk_bm25.yaml,0.5215,0.3294,0.0000,True
+Dense e5 + top-1 back-transliteration,5,roman_natural,250,0.5608,0.5952,0.8962,0.9934,,,,results/runs/hi_e5base_roman_natural_bt1_test.trec,configs/backtranslit_top1_dense.yaml,0.9225,0.5593,0.0000,True
+Dense e5 + top-1 back-transliteration,5,roman_rule,250,0.4907,0.5197,0.8580,0.9718,,,,results/runs/hi_e5base_roman_rule_bt1_test.trec,configs/backtranslit_top1_dense.yaml,0.8087,0.4889,0.0000,True
+Dense e5 + top-1 back-transliteration,5,roman_human,50,0.5496,0.5791,0.8949,0.9921,,,,results/runs/hi_e5base_roman_human_bt1_test.trec,configs/backtranslit_top1_dense.yaml,0.8817,0.5496,0.0000,True
+Normalized BM25 (+ top-5 back-transliteration),6,native,250,0.4040,0.4279,0.7789,0.9048,-0.2027,0.0000,True,results/runs/hi_bm25_norm_native_test.trec,configs/docside_bm25_norm.yaml,,,,
+Normalized BM25 (+ top-5 back-transliteration),6,roman_natural,250,0.3870,0.4098,0.7516,0.8864,-0.1737,0.0000,True,results/runs/hi_bm25_bt5_norm_roman_natural_test.trec,configs/docside_bt5_norm_bm25.yaml,0.6298,0.3856,0.0000,True
+Normalized BM25 (+ top-5 back-transliteration),6,roman_rule,250,0.3384,0.3623,0.6841,0.8591,-0.1523,0.0000,True,results/runs/hi_bm25_bt5_norm_roman_rule_test.trec,configs/docside_bt5_norm_bm25.yaml,0.5578,0.3367,0.0000,True
+Normalized BM25 (+ top-5 back-transliteration),6,roman_human,50,0.3425,0.3467,0.6297,0.8790,-0.2072,0.0030,False,results/runs/hi_bm25_bt5_norm_roman_human_test.trec,configs/docside_bt5_norm_bm25.yaml,0.5428,0.3425,0.0000,True
+Romanized 4-gram index,6,roman_natural,250,0.3353,0.3583,0.7162,0.8652,-0.2255,0.0000,True,results/runs/hi_bm25_romindex_ng4_roman_natural_test.trec,configs/docside_bm25_romindex_ng4.yaml,0.5426,0.3339,0.0000,True
+Romanized 4-gram index,6,roman_rule,250,0.4479,0.4756,0.8707,0.9572,-0.0427,0.1278,False,results/runs/hi_bm25_romindex_ng4_roman_rule_test.trec,configs/docside_bm25_romindex_ng4.yaml,0.7383,0.4462,0.0000,True
+Romanized 4-gram index,6,roman_human,50,0.4145,0.4645,0.6531,0.8651,-0.1351,0.0263,False,results/runs/hi_bm25_romindex_ng4_roman_human_test.trec,configs/docside_bm25_romindex_ng4.yaml,0.6607,0.4145,0.0000,True
+Dual index (RRF),6,roman_natural,250,0.3674,0.3879,0.8220,0.9351,-0.1934,0.0000,True,results/runs/hi_dual_rrf_roman_natural_test.trec,configs/docside_dual_rrf.yaml,0.5967,0.3660,0.0000,True
+Dual index (RRF),6,roman_rule,250,0.3948,0.4272,0.8570,0.9569,-0.0958,0.0004,True,results/runs/hi_dual_rrf_roman_rule_test.trec,configs/docside_dual_rrf.yaml,0.6508,0.3931,0.0000,True
+Dual index (RRF),6,roman_human,50,0.3748,0.4163,0.7572,0.9303,-0.1749,0.0131,False,results/runs/hi_dual_rrf_roman_human_test.trec,configs/docside_dual_rrf.yaml,0.5956,0.3748,0.0000,True
+Fine-tuned T (raw query),7,native,250,0.5468,0.5617,0.9199,0.9877,-0.0599,0.0000,True,results/runs/hi_e5ft_T_native_test.trec,configs/finetuned_dense_T.yaml,,,,
+Fine-tuned T (raw query),7,roman_natural,250,0.2259,0.2394,0.4916,0.6801,-0.3349,0.0000,True,results/runs/hi_e5ft_T_roman_natural_test.trec,configs/finetuned_dense_T.yaml,0.3583,0.2245,0.0000,True
+Fine-tuned T (raw query),7,roman_rule,250,0.0614,0.0657,0.1843,0.3372,-0.4293,0.0000,True,results/runs/hi_e5ft_T_roman_rule_test.trec,configs/finetuned_dense_T.yaml,0.1011,0.0596,0.0000,True
+Fine-tuned T (raw query),7,roman_human,50,0.1595,0.1682,0.3920,0.6207,-0.3901,0.0000,True,results/runs/hi_e5ft_T_roman_human_test.trec,configs/finetuned_dense_T.yaml,0.2436,0.1595,0.0002,True
+Fine-tuned N (+ top-1 back-transliteration),7,native,250,0.6006,0.6212,0.9516,0.9960,-0.0062,0.6260,False,results/runs/hi_e5ft_N_native_test.trec,configs/finetuned_dense_N.yaml,,,,
+Fine-tuned N (+ top-1 back-transliteration),7,roman_natural,250,0.5770,0.6023,0.9264,0.9972,0.0162,0.2065,False,results/runs/hi_e5ft_N_roman_natural_bt1_test.trec,configs/finetuned_dense_N.yaml,0.9499,0.5756,0.0000,True
+Fine-tuned N (+ top-1 back-transliteration),7,roman_rule,250,0.4904,0.5014,0.8773,0.9673,-0.0003,0.9836,False,results/runs/hi_e5ft_N_roman_rule_bt1_test.trec,configs/finetuned_dense_N.yaml,0.8083,0.4887,0.0000,True
+Fine-tuned N (+ top-1 back-transliteration),7,roman_human,50,0.5589,0.5756,0.9178,0.9931,0.0093,0.7390,False,results/runs/hi_e5ft_N_roman_human_bt1_test.trec,configs/finetuned_dense_N.yaml,0.8969,0.5589,0.0000,True
+Hybrid A (final system),8,native,250,0.6473,0.6646,0.9745,0.9960,0.0405,0.0003,True,results/runs/hi_fusion_A_interp_native_test.trec,configs/fusion_A_interp_native.yaml,,,,
+Hybrid A (final system),8,roman_natural,250,0.6115,0.6397,0.9569,0.9974,0.0507,0.0000,True,results/runs/hi_fusion_A_interp_roman_natural_test.trec,configs/fusion_A_interp.yaml,1.0080,0.6101,0.0000,True
+Hybrid A (final system),8,roman_rule,250,0.5532,0.5713,0.9182,0.9724,0.0626,0.0000,True,results/runs/hi_fusion_A_interp_roman_rule_test.trec,configs/fusion_A_interp.yaml,0.9118,0.5515,0.0000,True
+Hybrid A (final system),8,roman_human,50,0.5922,0.6167,0.9529,0.9971,0.0425,0.1819,False,results/runs/hi_fusion_A_interp_roman_human_test.trec,configs/fusion_A_interp.yaml,0.9513,0.5922,0.0000,True
+Hybrid C (dual index + dense),8,roman_natural,250,0.6101,0.6382,0.9656,0.9974,0.0493,0.0001,True,results/runs/hi_fusion_C_interp_roman_natural_test.trec,configs/fusion_C_interp.yaml,1.0056,0.6086,0.0000,True
+Hybrid C (dual index + dense),8,roman_rule,250,0.5869,0.6009,0.9397,0.9952,0.0962,0.0000,True,results/runs/hi_fusion_C_interp_roman_rule_test.trec,configs/fusion_C_interp.yaml,0.9673,0.5852,0.0000,True
+Hybrid C (dual index + dense),8,roman_human,50,0.5882,0.6182,0.9489,0.9971,0.0386,0.1480,False,results/runs/hi_fusion_C_interp_roman_human_test.trec,configs/fusion_C_interp.yaml,0.9448,0.5882,0.0000,True
+Hybrid D (no transliteration model),8,roman_natural,250,0.4002,0.4267,0.8041,0.9410,-0.1606,0.0000,True,results/runs/hi_fusion_D_interp_roman_natural_test.trec,configs/fusion_D_interp.yaml,0.6519,0.3988,0.0000,True
+Hybrid D (no transliteration model),8,roman_rule,250,0.4491,0.4832,0.8549,0.9514,-0.0416,0.1247,False,results/runs/hi_fusion_D_interp_roman_rule_test.trec,configs/fusion_D_interp.yaml,0.7402,0.4474,0.0000,True
+Hybrid D (no transliteration model),8,roman_human,50,0.4315,0.4532,0.7162,0.9373,-0.1181,0.0400,False,results/runs/hi_fusion_D_interp_roman_human_test.trec,configs/fusion_D_interp.yaml,0.6884,0.4315,0.0000,True

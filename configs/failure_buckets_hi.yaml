@@ -1,0 +1,44 @@
+# Phase 9 task 4: failure buckets of the natural romanized test queries, with each method's
+# metrics per bucket (docs/plans/09-eval-error-analysis.md).
+# Run: python -m scripts.failure_buckets --config configs/failure_buckets_hi.yaml
+experiment: failure_buckets_hi
+phase: 9
+lang: hi
+seed: 42                      # also draws the named-entity sample
+
+split: test
+query_set: roman_natural      # the main condition
+native_queries: data/processed/{split}_queries.tsv
+romanized_queries: data/romanized/{split}_queries_roman_natural.tsv
+backtranslit_queries: data/processed/{split}_queries_roman_natural_bt1.tsv   # top-1 (Phase 5)
+english_words: data/backtranslit/english_common_words_hi.txt   # lower-case English only (configs/english_common_words_hi.yaml)
+devanagari_rules: [chandrabindu, nasal, digits]   # the Devanagari key chosen in Phase 6
+
+missed_edges: [0, 1]          # buckets 0 / 1 / 2+ native words missed
+length_edges: [8, 12]         # buckets 1-8 / 9-12 / 13+ words (about thirds; as in Phase 8)
+
+entity:                       # hand tags: a fixed sample, tagged once and versioned
+  n: 100
+  file: data/annotations/entities_hi_test.tsv
+  # has_entity = yes if the query names a specific person, place, organization, work, event,
+  # scheme or other proper name (e.g. अल्जीरिया, स्वर्णिम चतुर्भुज, नीति आयोग); the name(s) counted
+  # are in the "entity" column. Not entities: भारत / भारतीय alone (in many of these quiz
+  # questions, transliterated like a common word), job titles (राष्ट्रपति), concepts and
+  # substances (मानव विकास सूचकांक, जिप्सम), and scientific names (ट्रिटिकम एस्टीवम).
+  # Model-assisted tags (2026-11-14), one annotator; the entity column makes them easy to spot-check.
+
+metrics: [ndcg@10, recall@100]
+per_query_dir: results/per_query
+runs:                         # column label: run name without the split
+  "BM25 romanized (P4)": hi_bm25_roman_natural
+  "dense romanized (P4)": hi_e5base_roman_natural
+  "BM25 top-5 norm. (P6)": hi_bm25_bt5_norm_roman_natural
+  "dense top-1 (P5)": hi_e5base_roman_natural_bt1
+  "hybrid A (P8)": hi_fusion_A_interp_roman_natural
+  "hybrid D, no translit. (P8)": hi_fusion_D_interp_roman_natural
+  "dense native (P4)": hi_e5base_native
+  "hybrid A native (P9)": hi_fusion_A_interp_native
+
+output:                       # generated, never edited by hand
+  labels: results/tables/failure_buckets_hi_test_labels.tsv
+  markdown: results/tables/failure_buckets_hi_test.md
