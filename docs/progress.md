@@ -1,8 +1,9 @@
 # Progress
 
 ## Current phase
-**Phase 8 — Hybrid fusion** (plan: docs/plans/08-hybrid-fusion.md); started 2026-11-14 on
-branch `phase-8/hybrid-fusion`; done and review gate approved (2026-11-14), not committed yet.
+**Phase 9 — Evaluation & error analysis** (plan: docs/plans/09-eval-error-analysis.md); started
+2026-11-14 on branch `phase-9/error-analysis`; done and review gate approved (2026-11-14), not
+committed yet.
 
 ## Completed
 - [x] Project brief and conventions in CLAUDE.md
@@ -252,12 +253,37 @@ branch `phase-8/hybrid-fusion`; done and review gate approved (2026-11-14), not 
   over Phase 5 dense, from queries where dense fails and from long queries); final best system:
   hybrid A with interpolation, α 0.3 (C as the alternative for Uroman-like spellings)
 
+- [x] Phase 8 merged into `main` (2026-11-14)
+- [x] Phase 9 task list agreed (2026-11-14): final system on native queries added; buckets by rule
+  except named entities (model-assisted tags of 100 test queries); thin notebook (plan changes
+  noted in docs/plans/09-eval-error-analysis.md)
+
+- [x] Phase 9 task 1 (2026-11-14): hybrid A on native queries (`configs/fusion_A_interp_native.yaml`,
+  α 0.3 as chosen in Phase 8): test nDCG@10 0.6473 vs dense native 0.6067 (p < 0.001)
+- [x] Phase 9 task 2 (2026-11-14): `scripts/final_table.py` → `results/final_table.csv`,
+  `results/tables/final_table_hi.md` / `.tex`: 12 methods × 4 query sets, every cell traced to its
+  run file and config; GapRecovered against the dense e5 baselines; Bonferroni over 71 comparisons
+- [x] Phase 9 task 3 (2026-11-14): `scripts/plot_per_query.py` → 3 figures in `results/figures/`
+  (hybrid A vs dense per query, the two routes, wins/ties/losses)
+- [x] Phase 9 task 4 (2026-11-14): `scripts/failure_buckets.py` → `results/tables/failure_buckets_hi_test.md`
+  (spelling, code-mixing, length, named entity); lower-case English word list
+  `data/backtranslit/english_common_words_hi.txt` (77 words); entity tags in
+  `data/annotations/entities_hi_test.tsv` (47 of 100 with an entity)
+- [x] Phase 9 task 5 (2026-11-14): `scripts/qualitative_examples.py` → 7 examples chosen by fixed rules
+  in `results/tables/examples_hi_test.md`; 6 tests for the analysis helpers (211 in total)
+- [x] Phase 9 task 6 (2026-11-14): `notebooks/error_analysis.ipynb` (walkthrough, outputs cleared);
+  "What we found" and 4 proposed lead findings written in docs/plans/09-eval-error-analysis.md
+
+- [x] Phase 9 review gate approved (2026-11-14): four lead findings for the report (near-total
+  gap reproducing the paper; back-transliteration is the key step; fusion closes the rest on
+  natural queries but lifts native queries too; what remains is transliteration error)
+
 ## In progress
 - (none)
 
 ## Next up
-- Commit Phase 8 (when asked), then Phase 9 — evaluation and error analysis: agree on the task
-  list and files
+- Commit Phase 9 (when asked), then the Gujarati decision: Phase 10 (cut
+  line Day 12) or straight to Phase 11 — demo and report
 
 ## Open decisions / questions
 - Languages → decided: Hindi core, Gujarati as a separate droppable phase (Phase 10,
@@ -345,6 +371,12 @@ branch `phase-8/hybrid-fusion`; done and review gate approved (2026-11-14), not 
 - Fusion method → decided: min-max score interpolation for every hybrid (RRF reported as the
   comparison; it weights the much weaker BM25 list equally and gains little); own code in
   `src/retrieval/fusion.py`, checked against ranx
+- Final table GapRecovered → decided: one reference pair for every row (dense e5 native vs
+  romanized), so rows are comparable
+- Code-mixing rule → decided: a romanized word counts as English only if its lower-case form is
+  frequent in IndicXlit's English dictionary (the Phase 5 list also counts names such as bharat)
+- Named-entity tags → decided: 100 test queries (seed 42), model-assisted, one annotator, names
+  recorded per query for spot-checking
 - Final best system → decided: hybrid A, interpolation α 0.3 (`configs/fusion_A_interp.yaml`:
   normalized native BM25 top-5 ⊕ off-the-shelf e5 top-1; level with B and C on natural and
   hand-romanized queries and needs no fine-tuned model)

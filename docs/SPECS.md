@@ -71,6 +71,7 @@ data/                 raw + processed corpora, queries, qrels (git-ignored)
   processed/
   romanized/          romanized query sets (versioned: small, partly impossible to regenerate)
   backtranslit/       frozen IndicXlit candidates (versioned: regenerated only with the Docker image)
+  annotations/        hand-made labels, e.g. named-entity tags of test queries (versioned: not regenerable)
   corpus_roman/       the corpus romanized with Uroman (git-ignored: 238 MB, rebuilt by scripts/romanize_corpus.py)
 src/
   data/               loading, splits, romanization, back-transliteration, normalization
@@ -87,10 +88,11 @@ results/
   training/           training logs of the fine-tuned models (loss per logging step)
   tables/             generated result tables, e.g. the script-gap table (never edited by hand)
   per_query/          per-query metric CSVs
-  figures/
+  figures/            generated figures for the report (PNG)
   results.csv         one row per evaluated run
+  final_table.csv     the final results table, one row per method and query set (Phase 9)
 models/               fine-tuned checkpoints (git-ignored)
-notebooks/            exploration and error analysis
+notebooks/            exploration and error analysis (walkthroughs of generated results; outputs cleared)
 app/                  demo search UI
 docker/               container definitions for tools that do not run on Windows (IndicXlit)
 docs/
