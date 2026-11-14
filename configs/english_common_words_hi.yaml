@@ -1,0 +1,19 @@
+# Phase 9 task 4: the romanized words that count as COMMON English words, for the code-mixing
+# failure bucket (docs/plans/09-eval-error-analysis.md). Same dictionary and thresholds as the
+# Phase 5 list (configs/backtranslit_english_hi.yaml), but only the lower-case spelling counts:
+# that list also holds Indian names that are frequent in English text when capitalised (bharat,
+# gandhi, rajasthan), which belong to the named-entity bucket, not to code-mixing.
+# Run: python -m scripts.backtranslit_english_words --config configs/english_common_words_hi.yaml
+experiment: english_common_words_hi
+phase: 9
+lang: hi
+seed: 42
+
+english_dict: data/xlit_cache/en/word_prob_dicts_en.zip       # IndicXlit v1.0 release (see the Phase 5 config)
+english_dict_member: word_prob_dicts/en_word_prob_dict.json
+min_length: 4
+min_prob: 1.0e-5
+forms: [lower]                # Phase 5 used [lower, capitalized, upper]
+
+words_file: data/backtranslit/words_hi.txt
+output: data/backtranslit/english_common_words_hi.txt          # frozen, versioned
