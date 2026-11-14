@@ -74,7 +74,7 @@ data/                 raw + processed corpora, queries, qrels (git-ignored)
   corpus_roman/       the corpus romanized with Uroman (git-ignored: 238 MB, rebuilt by scripts/romanize_corpus.py)
 src/
   data/               loading, splits, romanization, back-transliteration, normalization
-  retrieval/          bm25, dense, dual index, fusion
+  retrieval/          bm25, dense, fusion (RRF and score interpolation: dual index, hybrids)
   train/              training-pair building + dense retriever fine-tuning
   eval/               metrics, significance tests, result tables
   utils/              seeds, config loading, run-file I/O

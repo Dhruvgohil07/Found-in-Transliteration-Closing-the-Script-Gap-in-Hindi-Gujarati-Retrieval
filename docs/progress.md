@@ -1,9 +1,8 @@
 # Progress
 
 ## Current phase
-**Phase 7 — Dense retriever fine-tuning** (plan: docs/plans/07-dense-finetune.md); started
-2026-11-12 on branch `phase-7/dense-finetune`; done and review gate approved (2026-11-14), not
-committed yet.
+**Phase 8 — Hybrid fusion** (plan: docs/plans/08-hybrid-fusion.md); started 2026-11-14 on
+branch `phase-8/hybrid-fusion`; done and review gate approved (2026-11-14), not committed yet.
 
 ## Completed
 - [x] Project brief and conventions in CLAUDE.md
@@ -227,11 +226,38 @@ committed yet.
   Phase 8: off-the-shelf (or N) dense + top-1 back-transliteration, and fine-tuned T on raw
   romanized queries as a fusion candidate
 
+- [x] Phase 7 merged into `main` (2026-11-14)
+- [x] Phase 8 task list agreed (2026-11-14): hybrids A–D (D new: no transliteration model), RRF
+  and interpolation tuned on tune, win/loss counts for the review gate (plan changes noted in
+  docs/plans/08-hybrid-fusion.md)
+
+- [x] Phase 8 task 1 (2026-11-14): `src/retrieval/fusion.py` (RRF moved from `dual_index.py`, plus
+  min-max score interpolation, both checked against ranx); the Phase 6 dual-index runs reproduce
+  byte for byte; 6 new tests (205 in total)
+- [x] Phase 8 task 2 (2026-11-14): `scripts/run_fusion.py` takes a query set per component (BM25 on
+  `roman_natural`, dense on `roman_natural_bt1`) and a `fusion` block; `scripts/tune_fusion.py`.
+  Chosen on tune (natural nDCG@10): RRF k 10 / 10 / 5 / 30 and α 0.3 / 0.4 / 0.3 / 0.6 for A / B /
+  C / D (RRF grid widened down to 1, since k = 10 was at the planned edge)
+- [x] Phase 8 tasks 3–4 (2026-11-14): 8 fusion configs run on tune and test (40 runs);
+  `results/tables/fusion_hi_test.md` and `fusion_hi_tune.md` (`scripts/method_table.py` gained a
+  Bonferroni-corrected reference column). Test natural nDCG@10 vs Phase 5 dense 0.5608:
+  interpolation A 0.6115, B 0.6185, C 0.6101 (all significant, level with native-query dense
+  0.6067); RRF 0.57–0.59 (not significant); D 0.4002
+- [x] Phase 8 task 5 (2026-11-14): `scripts/fusion_wins.py` → `results/tables/fusion_wins_hi_test.md`
+  (fusion rescues queries where dense fails, long queries gain most) and
+  `results/tables/fusion_compare_hi_test.md` (A, B, C level except C > A on rule queries).
+  "What we found" written in docs/plans/08-hybrid-fusion.md
+
+- [x] Phase 8 review gate approved (2026-11-14): fusion helps with interpolation (+0.05 nDCG@10
+  over Phase 5 dense, from queries where dense fails and from long queries); final best system:
+  hybrid A with interpolation, α 0.3 (C as the alternative for Uroman-like spellings)
+
 ## In progress
 - (none)
 
 ## Next up
-- Commit Phase 7 (when asked), then Phase 8 — hybrid fusion: agree on the task list and files
+- Commit Phase 8 (when asked), then Phase 9 — evaluation and error analysis: agree on the task
+  list and files
 
 ## Open decisions / questions
 - Languages → decided: Hindi core, Gujarati as a separate droppable phase (Phase 10,
@@ -316,6 +342,12 @@ committed yet.
   missing detail (Uroman options in Phase 3, training setup in Phase 7), not upfront
 - Fine-tuning setups → decided: all three of the paper's set-ups, native-only (N), 50/50 mixed
   (50) and romanized-only (T), with natural romanizations; full fine-tuning of e5-base
+- Fusion method → decided: min-max score interpolation for every hybrid (RRF reported as the
+  comparison; it weights the much weaker BM25 list equally and gains little); own code in
+  `src/retrieval/fusion.py`, checked against ranx
+- Final best system → decided: hybrid A, interpolation α 0.3 (`configs/fusion_A_interp.yaml`:
+  normalized native BM25 top-5 ⊕ off-the-shelf e5 top-1; level with B and C on natural and
+  hand-romanized queries and needs no fine-tuned model)
 - Fine-tuned checkpoints → decided: N epoch 1, 50 epoch 5, T epoch 4 of 6 (natural nDCG@10 on
   the tune candidate pool, rule fixed before the run)
 - Training libraries → decided: `datasets` and `accelerate` added (sentence-transformers'
