@@ -9,6 +9,11 @@ and its frequency in IndicXlit's English word dictionary (the highest of the
 lower-case, capitalised and upper-case forms) is at least ``min_prob``. The
 list is written to ``output`` (versioned), so query building does not need the
 dictionary.
+
+``forms`` (optional) limits which spellings count: Phase 9 uses only the
+lower-case form, which keeps common English words (``film``, ``missile``) and
+drops names that are frequent in English text only when capitalised
+(``Bharat``, ``Gandhi``, ``Rajasthan``).
 """
 
 import argparse
@@ -27,8 +32,11 @@ def main() -> None:
         prob = json.loads(archive.read(cfg["english_dict_member"]))
     words = resolve_path(cfg["words_file"]).read_text(encoding="utf-8").split()
 
+    spellings = {"lower": str.lower, "capitalized": str.capitalize, "upper": str.upper}
+    forms = [spellings[f] for f in cfg.get("forms", list(spellings))]
+
     def english_prob(word: str) -> float:
-        return max(prob.get(form, 0.0) for form in (word, word.capitalize(), word.upper()))
+        return max(prob.get(form(word), 0.0) for form in forms)
 
     english = [w for w in words if len(w) >= cfg["min_length"] and english_prob(w) >= cfg["min_prob"]]
     out = resolve_path(cfg["output"])
