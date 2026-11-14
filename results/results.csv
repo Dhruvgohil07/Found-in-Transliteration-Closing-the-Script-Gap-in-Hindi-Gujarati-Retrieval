@@ -137,3 +137,5 @@ date,phase,lang,method,query_set,split,config,seed,n_queries,ndcg@10,mrr@10,reca
 2026-11-14,8,hi,fusion_D_interp,roman_natural,test,configs/fusion_D_interp.yaml,42,250,0.4002,0.4267,0.8041,0.9410,0.2776,results/runs/hi_fusion_D_interp_roman_natural_test.trec
 2026-11-14,8,hi,fusion_D_interp,roman_rule,test,configs/fusion_D_interp.yaml,42,250,0.4491,0.4832,0.8549,0.9514,0.2992,results/runs/hi_fusion_D_interp_roman_rule_test.trec
 2026-11-14,8,hi,fusion_D_interp,roman_human,test,configs/fusion_D_interp.yaml,42,50,0.4315,0.4532,0.7162,0.9373,0.2700,results/runs/hi_fusion_D_interp_roman_human_test.trec
+2026-11-14,9,hi,fusion_A_interp,native,tune,configs/fusion_A_interp_native.yaml,42,100,0.6123,0.6580,0.9543,0.9952,0.4800,results/runs/hi_fusion_A_interp_native_tune.trec
+2026-11-14,9,hi,fusion_A_interp,native,test,configs/fusion_A_interp_native.yaml,42,250,0.6473,0.6646,0.9745,0.9960,0.4424,results/runs/hi_fusion_A_interp_native_test.trec

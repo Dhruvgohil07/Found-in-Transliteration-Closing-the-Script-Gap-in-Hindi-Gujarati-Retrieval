@@ -1,0 +1,56 @@
+# Phase 9 task 5: qualitative examples chosen by fixed rules (docs/plans/09-eval-error-analysis.md).
+# Run: python -m scripts.qualitative_examples --config configs/qualitative_examples_hi.yaml
+experiment: qualitative_examples_hi
+phase: 9
+lang: hi
+seed: 42
+
+split: test
+metric: ndcg@10
+top_n: 3                      # passages shown per run
+snippet_chars: 90
+dataset: miracl/hi            # passages looked up by docno (one pass over the corpus)
+qrels: data/processed/{split}_qrels.tsv
+per_query_dir: results/per_query
+run_dir: results/runs
+labels: results/tables/failure_buckets_hi_test_labels.tsv   # from scripts/failure_buckets.py
+
+queries:
+  native: data/processed/{split}_queries.tsv
+  romanized: data/romanized/{split}_queries_roman_natural.tsv
+  backtranslit: data/processed/{split}_queries_roman_natural_bt1.tsv
+
+select:                       # the hybrid and its two routes (run names without the split)
+  hybrid: hi_fusion_A_interp_roman_natural
+  dense: hi_e5base_roman_natural_bt1
+  lexical: hi_bm25_bt5_norm_roman_natural
+
+buckets:                      # one example per failure bucket
+  - family: spelling
+    value: 2+ missed
+    rank_by: {a: hi_e5base_native, b: hi_e5base_roman_natural_bt1}   # largest loss from transliteration
+    why: "spelling: 2+ native words missed; largest drop from native to back-transliterated (dense)"
+  - family: code_mixed
+    value: code-mixed
+    rank_by: {a: hi_e5base_native, b: hi_e5base_roman_natural_bt1}
+    why: "code-mixed: largest drop from native to back-transliterated (dense)"
+  - family: named_entity
+    value: entity
+    rank_by: {a: hi_fusion_A_interp_roman_natural, b: hi_e5base_roman_natural_bt1}
+    why: "named entity: largest gain of the hybrid over dense"
+  - family: length
+    value: 13+ words
+    rank_by: {a: hi_fusion_A_interp_roman_natural, b: hi_e5base_roman_natural_bt1}
+    why: "long query (13+ words): largest gain of the hybrid over dense"
+
+score_runs:                   # label: run name without the split
+  dense native: hi_e5base_native
+  BM25 top-5 norm.: hi_bm25_bt5_norm_roman_natural
+  dense top-1: hi_e5base_roman_natural_bt1
+  hybrid A: hi_fusion_A_interp_roman_natural
+show_runs:                    # top passages shown for these
+  BM25 top-5 norm. (lexical route): hi_bm25_bt5_norm_roman_natural
+  dense top-1 (dense route): hi_e5base_roman_natural_bt1
+  hybrid A: hi_fusion_A_interp_roman_natural
+
+output: results/tables/examples_hi_test.md   # generated, never edited by hand

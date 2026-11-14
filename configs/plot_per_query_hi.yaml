@@ -1,0 +1,38 @@
+# Phase 9 task 3: per-query figures of the final system (docs/plans/09-eval-error-analysis.md).
+# Run: python -m scripts.plot_per_query --config configs/plot_per_query_hi.yaml
+experiment: plot_per_query_hi
+phase: 9
+lang: hi
+seed: 42
+
+split: test
+metric: ndcg@10
+per_query_dir: results/per_query
+output_dir: results/figures   # generated PNGs, never edited by hand
+
+scatter:
+  system: hi_fusion_A_interp_roman_natural
+  system_label: hybrid A
+  baseline: hi_e5base_roman_natural_bt1
+  baseline_label: dense e5 + top-1 back-transliteration
+  title: "Hybrid A vs the best single method (natural, test)"
+  file: scatter_hybridA_vs_dense_natural.png
+
+components:
+  hybrid: hi_fusion_A_interp_roman_natural
+  lexical: hi_bm25_bt5_norm_roman_natural
+  lexical_label: normalized BM25 + top-5 back-transliteration
+  dense: hi_e5base_roman_natural_bt1
+  dense_label: dense e5 + top-1 back-transliteration
+  title: "Hybrid A's two routes, per natural test query"
+  file: scatter_components_natural.png
+
+wtl:
+  title: "Hybrid A per query: wins, ties and losses"
+  file: wins_ties_losses_hybridA.png
+  comparisons:                # run names without the split
+    - {label: "natural vs dense + back-translit.", system: hi_fusion_A_interp_roman_natural, baseline: hi_e5base_roman_natural_bt1}
+    - {label: "rule vs dense + back-translit.", system: hi_fusion_A_interp_roman_rule, baseline: hi_e5base_roman_rule_bt1}
+    - {label: "human vs dense + back-translit.", system: hi_fusion_A_interp_roman_human, baseline: hi_e5base_roman_human_bt1}
+    - {label: "natural vs BM25 + back-translit.", system: hi_fusion_A_interp_roman_natural, baseline: hi_bm25_bt5_norm_roman_natural}
+    - {label: "native vs dense (native queries)", system: hi_fusion_A_interp_native, baseline: hi_e5base_native}
