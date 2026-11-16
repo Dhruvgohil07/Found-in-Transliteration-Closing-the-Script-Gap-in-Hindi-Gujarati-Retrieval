@@ -1,0 +1,47 @@
+# Phase 10 task 3: romanized versions of the Gujarati queries (docs/plans/10-gujarati.md),
+# same procedure as Hindi (configs/romanize_hi.yaml, docs/plans/03-romanized-queries.md).
+# Used by scripts/romanize_queries.py, scripts/human_romanization.py and
+# scripts/romanization_quality.py.
+experiment: romanize_gu
+lang: gu
+seed: 42
+
+input_dir: data/processed/gu  # native {split}_queries.tsv from task 2
+output_dir: data/romanized/gu # {split}_queries_roman_{method}.tsv (versioned, like the Hindi sets)
+splits: [tune, test]          # no Gujarati train split
+
+# Contrast condition: the reference paper's tool and call, on the raw query text.
+rule:
+  tool: uroman==1.3.1.1
+  lang: guj                   # ISO 639-3 code for Gujarati
+
+# Main condition: an LLM writes each query the way a user would type it.
+# Run once; the output files are frozen and never regenerated.
+natural:
+  tool: google-genai==2.34.0
+  model: gemini-3.5-flash     # same model id as Hindi; the version that answered is saved in the meta file
+  temperature: 0.0
+  batch_size: 75              # 600 queries = 8 requests, within one day of the free tier
+  seconds_between_calls: 6    # stays under free-tier request-per-minute limits
+  instructions: |
+    You romanize Gujarati web-search queries. You get a JSON list of queries written
+    in Gujarati script. For each one, write how a typical Gujarati user would type the
+    same query in Latin letters on a phone or laptop keyboard: casual, everyday
+    spelling, all lowercase, no accents or diacritics.
+    Spell English words and well-known names the usual English way
+    (ક્રિકેટ -> cricket, અમદાવાદ -> ahmedabad). Keep digits and punctuation such as "?" as
+    they are. Do not translate, explain, correct, add or drop words: romanize every
+    word of the query.
+    Example: ["ખેડૂત આંદોલનના તાજા સમાચાર"] -> ["khedut andolan na taja samachar"]
+    Answer with a JSON list of strings: one romanized query per input query, in
+    the same order.
+
+# Realism check (optional for Gujarati, if time allows): test queries romanized by hand.
+human:
+  split: test
+  n_queries: 50
+  sheet_dir: data/processed/gu  # the sheet to fill in (working file, git-ignored)
+
+quality:
+  n_review: 30                # natural-romanized tune queries for the manual review
+  review_file: data/processed/gu/review_natural_gu.md

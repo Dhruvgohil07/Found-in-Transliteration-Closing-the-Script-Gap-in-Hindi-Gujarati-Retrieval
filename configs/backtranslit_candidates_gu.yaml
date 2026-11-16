@@ -1,0 +1,22 @@
+# Phase 10 task 4: IndicXlit candidates for every romanized Gujarati word
+# (docs/plans/10-gujarati.md), same settings as configs/backtranslit_candidates_hi.yaml.
+# Run: python -m scripts.backtranslit_candidates --config configs/backtranslit_candidates_gu.yaml
+# (needs Docker Desktop running and the image: docker build -t script-gap-indicxlit docker/indicxlit)
+experiment: backtranslit_candidates_gu
+lang: gu                      # IndicXlit target language (same multilingual model as Hindi)
+seed: 42                      # beam search is deterministic; kept for the config convention
+
+query_files:                  # every romanized Gujarati set (tune + test)
+  - data/romanized/gu/tune_queries_roman_natural.tsv
+  - data/romanized/gu/test_queries_roman_natural.tsv
+  - data/romanized/gu/tune_queries_roman_rule.tsv
+  - data/romanized/gu/test_queries_roman_rule.tsv
+
+docker_image: script-gap-indicxlit
+model_cache: data/xlit_cache  # IndicXlit model + word-frequency dictionaries (git-ignored)
+beam_width: 10                # candidates per word; k is chosen later on tune
+chunk: 64                     # words per IndicXlit batch
+
+words_file: data/backtranslit/words_gu.txt            # input word list (one per line)
+candidates_file: data/backtranslit/candidates_gu.tsv  # frozen output (versioned)
+meta_file: data/backtranslit/candidates_gu_meta.json
