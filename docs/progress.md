@@ -1,9 +1,8 @@
 # Progress
 
 ## Current phase
-**Phase 9 — Evaluation & error analysis** (plan: docs/plans/09-eval-error-analysis.md); started
-2026-11-14 on branch `phase-9/error-analysis`; done and review gate approved (2026-11-14), not
-committed yet.
+**Phase 10 — Gujarati extension** (plan: docs/plans/10-gujarati.md); started 2026-11-16 on branch
+`phase-10/gujarati`; done and review gate approved (2026-11-17), not committed yet.
 
 ## Completed
 - [x] Project brief and conventions in CLAUDE.md
@@ -278,12 +277,43 @@ committed yet.
   gap reproducing the paper; back-transliteration is the key step; fusion closes the rest on
   natural queries but lifts native queries too; what remains is transliteration error)
 
+- [x] Phase 9 merged into `main` (2026-11-14)
+- [x] Phase 10 go-ahead (2026-11-16): done despite being past the Day 12 cut line
+- [x] Phase 10 task 1 (2026-11-16): Gujarati collection = IndicQA-gu (`mteb/IndicQARetrieval`, 248
+  judged passages, 2,015 queries) + Gujarati Wikipedia distractors; IndicMARCO-gu (no dev/test
+  qrels) and FIRE (registration) rejected. `src/data/distractors.py` + `scripts/build_collection_gu.py`
+  → 51,129 passages (63 overlapping articles dropped; 130–300-word packing to match the judged
+  passages' median length); 12 tests (223 in total)
+- [x] Phase 10 task 2 (2026-11-16): `configs/data_gu.yaml`; `prepare_data.py` reads local files,
+  `train` optional, `split.n_test` sample → 100 tune / 500 test (seed 42); `data_stats.py` gained
+  optional splits, length per passage kind and build counts → `docs/data/data_card_gu.md`.
+  `iter_docs` reads a local `.jsonl` corpus. Hindi split files and data card regenerate byte for byte
+
+- [x] Phase 10 task 3 (2026-11-16): `configs/romanize_gu.yaml` → `data/romanized/gu/{tune,test}_queries_roman_{rule,natural}.tsv`
+  (600 queries each, frozen). Uroman `guj` (visarga ઃ mapped to `h` afterwards, as Uroman does for
+  Hindi; 1 query); Gemini 8 requests, answered by `gemini-3.6-flash` as for Hindi. Natural word count
+  differs from native in 149 of 600 queries, mostly split case endings (`france ma`), realistic and
+  kept; CER natural vs rule 0.241. `check_romanized` rejects Gujarati letters too; 2 tests
+
+- [x] Phase 10 task 4 (2026-11-17): Gujarati runs on tune + test, every setting re-chosen on tune with the
+  Hindi procedure: BM25 k1 1.5 / b 0.6, dense passages 256 tokens (over 512), IndicXlit `gu` candidates
+  (4,794 words), k 3, normalization `gu_nukta` (Gujarati twins of the Devanagari rules in
+  `src/data/normalize.py`), hybrid A α 0.5. Test natural nDCG@10: BM25 0.013 → top-3 BM25 0.359 →
+  hybrid A 0.474 (native dense 0.433, hybrid A native 0.494). Fixed on the way: `--force` of
+  `build_bm25_index.py` now really overwrites; `count_docs` for local corpora
+- [x] Phase 10 task 5 (2026-11-17): `results/tables/final_table_gu.md` and
+  `scripts/compare_languages.py` → `results/tables/compare_hi_gu_test.md` (Kendall τ-b +0.91 native,
+  +0.69 natural and rule); "What we found" written in docs/plans/10-gujarati.md; 237 tests
+
+- [x] Phase 10 review gate approved (2026-11-17): the Hindi method ranking mostly holds for Gujarati
+  (hybrid A first and raw baselines last everywhere; lexical and dense back-transliteration swap
+  places, not significantly); hybrid A recovers 110% of the natural-query gap
+
 ## In progress
 - (none)
 
 ## Next up
-- Commit Phase 9 (when asked), then the Gujarati decision: Phase 10 (cut
-  line Day 12) or straight to Phase 11 — demo and report
+- Commit Phase 10 (when asked), then Phase 11 — demo and report
 
 ## Open decisions / questions
 - Languages → decided: Hindi core, Gujarati as a separate droppable phase (Phase 10,
@@ -398,8 +428,17 @@ committed yet.
   BM25 test nDCG@10 from 0.381 to 0.404 (p = 0.003); still below MIRACL's Lucene BM25 with the
   Hindi analyzer (0.458), which also stems
 - Demo stack → open: Streamlit or Gradio; decide in Phase 11
+- Gujarati collection → decided: IndicQA-gu + unjudged Wikipedia distractors (248 judged passages
+  alone make retrieval near-trivial); query-level tune/test split kept although 171 of 500 test
+  queries share a relevant passage with tune (only global parameters are tuned)
+- Dense passage length for Gujarati → decided: 256 tokens, as Hindi (tune native nDCG@10 0.4358 vs
+  0.3908 at 512)
+- Gujarati human-romanized subset (50 test queries) → open: optional, only if time allows
 
 ## Known issues
+- Gujarati takes many more e5 tokens per word than Hindi (found 2026-11-16): judged Gujarati passages
+  have a median of 300 e5 tokens and 54% of all Gujarati passages exceed 256, the length the dense model
+  runs with, so dense retrieval cuts off the end of about half the passages (data_card_gu.md)
 - Terrier drops terms longer than 20 characters (found 2026-11-10): romanization lengthens words
   (चमत्कारचिन्तामणि -> `camatkaaracintaamanni`), so 10,041 of 35.2M romanized passage tokens
   (0.029%) are not indexed and 2 passages become empty; no tune query and 1 test query token is

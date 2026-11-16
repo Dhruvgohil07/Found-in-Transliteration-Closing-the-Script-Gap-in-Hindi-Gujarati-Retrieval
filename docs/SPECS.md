@@ -117,7 +117,7 @@ docs/
 | Language | Primary candidate | Notes |
 |---|---|---|
 | Hindi | **MIRACL-hi** via `ir_datasets` (native Wikipedia passages, human queries + qrels) | confirm against the paper in Phase 2 |
-| Gujarati | AI4Bharat IndicIRSuite / IndicMSMARCO (Gujarati) or another verified collection | MIRACL has no Gujarati; decide in Phase 10 |
+| Gujarati | **IndicQA-gu** (`mteb/IndicQARetrieval`: native questions + judged Wikipedia paragraphs) **+ unjudged Gujarati Wikipedia distractors**, built by `scripts/build_collection_gu.py` | decided in Phase 10 (docs/plans/10-gujarati.md); MIRACL has no Gujarati, IndicMARCO-gu has no dev/test qrels |
 
 All statistics (documents, queries, judgments, lengths) are **computed from the data** by a script and written to the data card (`docs/data/data_card_hi.md`, `docs/data/data_card_gu.md`). Never copy or estimate them.
 
@@ -136,6 +136,8 @@ Every romanized query set contains the **same query IDs** as the native set of i
 | `data/romanized/{split}_queries_roman_natural.tsv` | casual "Hinglish"-style romanization by an LLM (main condition) |
 | `data/romanized/{split}_queries_roman_rule.tsv` | deterministic Uroman romanization, as in the reference paper (contrast) |
 | `data/romanized/test_queries_roman_human_a.tsv` | 50 test queries romanized by hand (one version, A) |
+
+Gujarati (Phase 10) uses the same file names one folder down: `data/processed/gu/` and `data/romanized/gu/`, with tune and test only (no train split). The Gujarati corpus is a local file, `data/processed/gu/corpus.jsonl`, which `src/data/load.iter_docs` reads like an ir_datasets collection.
 
 Romanized query sets are produced once and **frozen**: the scripts refuse to overwrite them, and regeneration happens only on purpose. Because the LLM output and the hand-typed sets cannot be regenerated exactly, `data/romanized/` is the one data folder kept in git (about 0.2 MB of text; MIRACL is Apache-2.0).
 
