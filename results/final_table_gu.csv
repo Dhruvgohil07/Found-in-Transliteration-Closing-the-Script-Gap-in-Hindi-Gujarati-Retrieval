@@ -1,0 +1,17 @@
+method,phase,query_set,n_queries,ndcg@10,mrr@10,recall@100,recall@1000,diff vs the best single method,p vs the best single method,sig vs the best single method,run_file,config,gap_recovered,diff vs BM25 romanized,p vs BM25 romanized,sig vs BM25 romanized
+BM25,10,native,500,0.3564,0.3242,0.6300,0.7820,-0.0761,0.0003,True,results/runs/gu_bm25_native_test.trec,configs/baseline_bm25_gu.yaml,,,,
+BM25,10,roman_natural,500,0.0129,0.0112,0.0320,0.0360,-0.3242,0.0000,True,results/runs/gu_bm25_roman_natural_test.trec,configs/baseline_bm25_gu.yaml,-0.0013,,,
+BM25,10,roman_rule,500,0.0083,0.0072,0.0220,0.0240,-0.2880,0.0000,True,results/runs/gu_bm25_roman_rule_test.trec,configs/baseline_bm25_gu.yaml,0.0146,,,
+Dense e5,10,native,500,0.4325,0.3954,0.7240,0.8680,,,,results/runs/gu_e5base_native_test.trec,configs/baseline_dense_gu.yaml,,,,
+Dense e5,10,roman_natural,500,0.0134,0.0103,0.0740,0.2740,-0.3237,0.0000,True,results/runs/gu_e5base_roman_natural_test.trec,configs/baseline_dense_gu.yaml,0.0000,0.0006,0.9202,False
+Dense e5,10,roman_rule,500,0.0020,0.0020,0.0100,0.0800,-0.2943,0.0000,True,results/runs/gu_e5base_roman_rule_test.trec,configs/baseline_dense_gu.yaml,0.0000,-0.0063,0.1376,False
+BM25 + top-3 back-transliteration,10,roman_natural,500,0.3593,0.3282,0.6440,0.7960,0.0222,0.2882,False,results/runs/gu_bm25_bt3_roman_natural_test.trec,configs/backtranslit_topk_bm25_gu.yaml,0.8255,0.3465,0.0000,True
+BM25 + top-3 back-transliteration,10,roman_rule,500,0.3105,0.2874,0.5660,0.7700,0.0142,0.4998,False,results/runs/gu_bm25_bt3_roman_rule_test.trec,configs/backtranslit_topk_bm25_gu.yaml,0.7167,0.3023,0.0000,True
+Dense e5 + top-1 back-transliteration,10,roman_natural,500,0.3371,0.3051,0.6580,0.8180,,,,results/runs/gu_e5base_roman_natural_bt1_test.trec,configs/backtranslit_top1_dense_gu.yaml,0.7724,0.3242,0.0000,True
+Dense e5 + top-1 back-transliteration,10,roman_rule,500,0.2963,0.2654,0.5980,0.7840,,,,results/runs/gu_e5base_roman_rule_bt1_test.trec,configs/backtranslit_top1_dense_gu.yaml,0.6837,0.2880,0.0000,True
+Normalized BM25 (+ top-3 back-transliteration),10,native,500,0.3564,0.3242,0.6300,0.7820,-0.0761,0.0003,True,results/runs/gu_bm25_norm_native_test.trec,configs/docside_bm25_norm_gu.yaml,,,,
+Normalized BM25 (+ top-3 back-transliteration),10,roman_natural,500,0.3593,0.3282,0.6440,0.7960,0.0222,0.2882,False,results/runs/gu_bm25_bt3_norm_roman_natural_test.trec,configs/docside_bt3_norm_bm25_gu.yaml,0.8255,0.3465,0.0000,True
+Normalized BM25 (+ top-3 back-transliteration),10,roman_rule,500,0.3105,0.2874,0.5660,0.7700,0.0142,0.4998,False,results/runs/gu_bm25_bt3_norm_roman_rule_test.trec,configs/docside_bt3_norm_bm25_gu.yaml,0.7167,0.3023,0.0000,True
+Hybrid A (final system),10,native,500,0.4938,0.4468,0.7980,0.9040,0.0614,0.0000,True,results/runs/gu_fusion_A_interp_native_test.trec,configs/fusion_A_interp_native_gu.yaml,,,,
+Hybrid A (final system),10,roman_natural,500,0.4744,0.4342,0.7680,0.8840,0.1373,0.0000,True,results/runs/gu_fusion_A_interp_roman_natural_test.trec,configs/fusion_A_interp_gu.yaml,1.1000,0.4615,0.0000,True
+Hybrid A (final system),10,roman_rule,500,0.4287,0.3895,0.7260,0.8600,0.1324,0.0000,True,results/runs/gu_fusion_A_interp_roman_rule_test.trec,configs/fusion_A_interp_gu.yaml,0.9912,0.4204,0.0000,True

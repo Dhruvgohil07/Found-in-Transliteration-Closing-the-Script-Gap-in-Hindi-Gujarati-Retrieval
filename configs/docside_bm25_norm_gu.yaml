@@ -1,0 +1,25 @@
+# Phase 10 task 4: native Gujarati queries on the normalized index (docs/plans/10-gujarati.md),
+# as configs/docside_bm25_norm.yaml (Phase 6); the lexical part of hybrid A on native queries.
+# Run: python -m scripts.run_baseline --config configs/docside_bm25_norm_gu.yaml
+experiment: docside_bm25_norm_gu
+phase: 10
+lang: gu
+seed: 42                      # BM25 is deterministic; kept for the config convention
+method: bm25_norm             # run names: gu_bm25_norm_{query_set}_{split}
+
+index_dir: data/indexes/gu_native_norm    # built by configs/index_bm25_gu_norm.yaml
+normalize: [gu_nukta]         # rules chosen on tune (configs/tune_docside_normalization_gu.yaml)
+bm25:
+  k1: 1.5                     # re-tuned on tune by configs/tune_bm25_gu_norm.yaml: same as before
+  b: 0.6
+  floor_idf: true
+top_k: 1000
+
+splits: [tune, test]
+qrels: data/processed/gu/{split}_qrels.tsv
+query_sets:
+  native: data/processed/gu/{split}_queries.tsv
+
+output:
+  run_dir: results/runs
+  per_query_dir: results/per_query

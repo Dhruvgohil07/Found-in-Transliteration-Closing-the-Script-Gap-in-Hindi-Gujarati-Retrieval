@@ -1,0 +1,13 @@
+# Phase 10 task 4: top-1 back-transliterated Gujarati queries (docs/plans/10-gujarati.md),
+# as configs/backtranslit_queries_hi.yaml.
+# Run: python -m scripts.build_backtranslit_queries --config configs/backtranslit_queries_gu.yaml
+experiment: backtranslit_queries_gu
+lang: gu
+seed: 42
+
+candidates_file: data/backtranslit/candidates_gu.tsv
+splits: [tune, test]
+query_sets:                   # romanized set -> its file
+  roman_natural: data/romanized/gu/{split}_queries_roman_natural.tsv
+  roman_rule: data/romanized/gu/{split}_queries_roman_rule.tsv
+output: data/processed/gu/{split}_queries_{query_set}_bt1.tsv

@@ -1,0 +1,32 @@
+# Phase 10 task 4: off-the-shelf e5 on Gujarati with passages cut at 256 tokens, tune split only.
+# Gujarati needs about 2.2 e5 tokens per word, so 54% of the passages exceed 256 tokens
+# (docs/data/data_card_gu.md); 256 (the Hindi setting) and 512 (e5's maximum) are compared
+# on tune (native nDCG@10), and the winner becomes configs/baseline_dense_gu.yaml.
+# Run: python -m scripts.encode_corpus --config configs/dense_len256_gu.yaml
+#      python -m scripts.run_baseline --config configs/dense_len256_gu.yaml
+experiment: dense_len256_gu
+phase: 10
+lang: gu
+seed: 42
+method: e5base_len256         # run names: gu_e5base_len256_{query_set}_tune
+
+model: intfloat/multilingual-e5-base   # main dense model (Phase 1), not fine-tuned
+fp16: true
+dataset: data/processed/gu/corpus.jsonl   # 51,129 passages (titles are empty)
+embeddings_dir: data/embeddings/gu_e5base_len256
+passage_max_length: 256
+shard_size: 50000             # passages per cached shard; an interrupted encoding resumes
+batch_size: 64
+query_max_length: 64          # the longest Gujarati query is 61 e5 tokens (data card)
+
+top_k: 1000
+splits: [tune]                # the choice is made on tune only
+qrels: data/processed/gu/{split}_qrels.tsv
+query_sets:
+  native: data/processed/gu/{split}_queries.tsv
+  roman_natural: data/romanized/gu/{split}_queries_roman_natural.tsv
+  roman_rule: data/romanized/gu/{split}_queries_roman_rule.tsv
+
+output:
+  run_dir: results/runs
+  per_query_dir: results/per_query
