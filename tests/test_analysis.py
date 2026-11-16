@@ -2,6 +2,7 @@
 
 import pandas as pd
 
+from scripts.compare_languages import rank_agreement, ranks
 from scripts.failure_buckets import bucket, bucket_order, missed_words, native_words
 from scripts.plot_per_query import outcome
 from scripts.qualitative_examples import first_by, top_docs
@@ -44,3 +45,17 @@ def test_top_docs_and_outcome():
     a = pd.Series({"q1": 0.5, "q2": 0.2, "q3": 0.0})
     b = pd.Series({"q1": 0.4, "q2": 0.2, "q3": 0.1})
     assert outcome(a, b).to_dict() == {"q1": "win", "q2": "tie", "q3": "loss"}
+
+
+# --- compare_languages.py (Phase 10) ------------------------------------------
+
+
+def test_ranks_best_first_ties_share_the_better_rank():
+    scores = pd.Series({"a": 0.5, "b": 0.7, "c": 0.5, "d": 0.1})
+    assert ranks(scores).to_dict() == {"a": 2, "b": 1, "c": 2, "d": 4}
+
+
+def test_rank_agreement_same_and_reversed_order():
+    a = pd.Series({"x": 0.1, "y": 0.2, "z": 0.3})
+    assert rank_agreement(a, a * 2) == 1.0
+    assert rank_agreement(a, -a) == -1.0

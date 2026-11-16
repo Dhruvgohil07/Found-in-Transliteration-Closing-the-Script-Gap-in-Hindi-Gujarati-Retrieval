@@ -7,6 +7,10 @@ Everything is returned in one format, whatever the source:
 - docs:    an iterator of ``{"docno", "title", "text"}`` dicts (``docno`` is the
   field name PyTerrier's indexer expects)
 
+A collection is named by its ir_datasets id (``miracl/hi``) or, for a corpus we
+assembled ourselves (Phase 10, Gujarati), by the repo-relative path of a
+JSON-lines file with one ``{"docno", "title", "text"}`` object per line.
+
 Raw downloads stay in the ir_datasets cache (``~/.ir_datasets`` by default),
 outside the repo. Our own processed files (SPECS §5.4) are UTF-8 TSV:
 
@@ -19,12 +23,15 @@ ir_datasets opens some text files without naming an encoding, so on Windows
 mode (``PYTHONUTF8=1`` or ``python -X utf8``); the loaders check this first.
 """
 
+import json
 import sys
-from collections.abc import Iterator
+from collections.abc import Iterable, Iterator
 from pathlib import Path
 
 import ir_datasets
 import ir_measures
+
+from src.utils.config import resolve_path
 
 Queries = dict[str, str]
 Qrels = dict[str, dict[str, int]]
@@ -55,11 +62,41 @@ def load_qrels(dataset_id: str) -> Qrels:
 
 
 def iter_docs(dataset_id: str) -> Iterator[dict[str, str]]:
-    """Documents of an ir_datasets dataset, one dict at a time (the corpus is not
-    held in memory)."""
+    """Documents of an ir_datasets dataset, or of a local ``.jsonl`` corpus file,
+    one dict at a time (the corpus is not held in memory)."""
     require_utf8_mode()
+    if dataset_id.endswith(".jsonl"):
+        with open(resolve_path(dataset_id), encoding="utf-8") as f:
+            for line in f:
+                doc = json.loads(line)
+                yield {"docno": doc["docno"], "title": doc["title"], "text": doc["text"]}
+        return
     for doc in ir_datasets.load(dataset_id).docs_iter():
         yield {"docno": doc.doc_id, "title": doc.title, "text": doc.text}
+
+
+def count_docs(dataset_id: str) -> int:
+    """Number of documents in an ir_datasets collection or a local ``.jsonl`` corpus."""
+    if dataset_id.endswith(".jsonl"):
+        with open(resolve_path(dataset_id), encoding="utf-8") as f:
+            return sum(1 for _ in f)
+    return ir_datasets.load(dataset_id).docs_count()
+
+
+def write_docs(docs: Iterable[dict[str, str]], path: str | Path) -> int:
+    """Write ``{"docno", "title", "text"}`` dicts as JSON lines, in the given order;
+    returns the number written. Raises ``ValueError`` on a repeated docno."""
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    seen: set[str] = set()
+    with open(path, "w", encoding="utf-8", newline="\n") as f:
+        for doc in docs:
+            if doc["docno"] in seen:
+                raise ValueError(f"duplicate docno {doc['docno']!r}")
+            seen.add(doc["docno"])
+            record = {"docno": doc["docno"], "title": doc["title"], "text": doc["text"]}
+            f.write(json.dumps(record, ensure_ascii=False) + "\n")
+    return len(seen)
 
 
 def get_docs(dataset_id: str, docnos: set[str]) -> dict[str, dict[str, str]]:

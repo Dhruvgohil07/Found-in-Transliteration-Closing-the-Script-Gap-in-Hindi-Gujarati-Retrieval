@@ -1,4 +1,4 @@
-"""Tests for src/data/normalize.py (Devanagari and romanized normalization keys, Phase 6).
+"""Tests for src/data/normalize.py (Devanagari and romanized keys, Phase 6; Gujarati twins, Phase 10).
 
 The Devanagari variant pairs are the ones found in the Phase 5 failure analysis
 (docs/plans/05-query-backtranslit.md); the romanized pairs are natural vs Uroman
@@ -11,6 +11,8 @@ import pytest
 
 from src.data.normalize import (
     DEVANAGARI_RULES,
+    GUJARATI_RULES,
+    NATIVE_RULES,
     ROMAN_RULES,
     normalize_devanagari,
     normalize_romanized,
@@ -214,3 +216,36 @@ def test_terrier_tokeniser_keeps_the_marks_the_rules_change():
     tokens = list(pt.rewrite.tokenise("utf")(topics)["query"])
     assert tokens[:4] == words[:4]
     assert tokens[4] == "क् या"
+
+
+# --- Gujarati twins (Phase 10) -------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "rule, text, expected",
+    [
+        ("gu_chandrabindu", "આઁખ", "આંખ"),
+        ("gu_nasal", "હિન્દી", "હિંદી"),          # ન + ્ before દ (dental) -> anusvara
+        ("gu_nasal", "આરમ્ભ", "આરંભ"),           # મ + ્ before ભ (labial)
+        ("gu_nasal", "જન્મ", "જન્મ"),             # ન before મ: no anusvara spelling, kept
+        ("gu_final_virama", "સમ્રાટ્ છે", "સમ્રાટ છે"),
+        ("gu_final_virama", "સમ્રાટ", "સમ્રાટ"),
+        ("gu_digits", "ઈ.સ. ૧૪૮૭માં", "ઈ.સ. 1487માં"),
+        ("gu_nukta", "ઝ઼", "ઝ"),
+    ],
+)
+def test_gujarati_rules(rule, text, expected):
+    assert normalize_devanagari(text, [rule]) == expected
+
+
+def test_gujarati_rules_leave_devanagari_alone_and_vice_versa():
+    hindi = "हिन्दी आँख २०२३"
+    gujarati = "હિન્દી આઁખ ૨૦૨૩"
+    assert normalize_devanagari(hindi, GUJARATI_RULES) == hindi
+    assert normalize_devanagari(gujarati, DEVANAGARI_RULES) == gujarati
+    assert normalize_devanagari(gujarati, GUJARATI_RULES) == "હિંદી આંખ 2023"
+
+
+def test_rule_registry_keeps_hindi_order_first():
+    assert NATIVE_RULES[:len(DEVANAGARI_RULES)] == DEVANAGARI_RULES
+    assert set(GUJARATI_RULES) <= set(NATIVE_RULES)

@@ -24,9 +24,18 @@ def test_uroman_matches_the_paper_setup():
     assert out == {"q1": "kisaan aamdolan", "q2": "bhaarat kii raajadhaanii kyaa hai"}
 
 
+def test_uroman_romanizes_gujarati():
+    # Phase 10: the same call with lang="guj" leaves no Gujarati letters.
+    out = romanize_uroman({"q1": "ગુજરાતની રાજધાની કઈ છે?", "q2": "દુઃખ"}, lang="guj")
+    check_romanized(out["q1"])
+    assert out["q1"].endswith("?")
+    assert out["q2"] == "duhkha"    # visarga -> h, as Uroman does for Hindi (दुःख -> duhkh);
+                                    # Uroman's Gujarati rules keep the final inherent a
+
+
 # --- checking and parsing LLM output ----------------------------------------
 
-@pytest.mark.parametrize("bad", ["", "   ", "kisan आंदोलन", "kisan\tandolan", "kisan\nandolan"])
+@pytest.mark.parametrize("bad", ["", "   ", "kisan आंदोलन", "kisan આંદોલન", "kisan\tandolan", "kisan\nandolan"])
 def test_check_romanized_rejects_unusable_text(bad):
     with pytest.raises(ValueError):
         check_romanized(bad)
