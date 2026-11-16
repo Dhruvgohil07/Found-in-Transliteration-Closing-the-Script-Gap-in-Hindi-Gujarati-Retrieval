@@ -1,0 +1,16 @@
+# Phase 10 task 4: normalized BM25 index of the native Gujarati corpus (docs/plans/10-gujarati.md),
+# as configs/index_bm25_hi_norm.yaml (Phase 6).
+# Used by scripts/build_bm25_index.py; the BM25 runs read index_dir.
+experiment: index_bm25_gu_norm
+lang: gu
+seed: 42                      # indexing is deterministic; kept for the config convention
+
+dataset: data/processed/gu/corpus.jsonl   # 51,129 passages (scripts/build_collection_gu.py)
+text: title + text            # src.data.load.full_text; titles are empty for every Gujarati passage
+normalize: [gu_nukta]         # chosen on tune (configs/tune_docside_normalization_gu.yaml)
+index_dir: data/indexes/gu_native_norm   # git-ignored; rebuild with scripts/build_bm25_index.py
+
+tokeniser: utf                # keeps Gujarati (the default English tokeniser drops it)
+stemmer: none                 # no English Porter stemming of Latin-script words
+stopwords: none               # no English stopword list
+docno_length: 32              # bytes reserved per docno; longer ids raise an error

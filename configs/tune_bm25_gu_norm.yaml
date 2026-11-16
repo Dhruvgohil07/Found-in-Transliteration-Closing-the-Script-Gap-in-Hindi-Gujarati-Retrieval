@@ -1,0 +1,23 @@
+# Phase 10 task 4: k1 and b re-tuned on the normalized Gujarati index (docs/plans/10-gujarati.md),
+# as configs/tune_bm25_hi_norm.yaml (Phase 6).
+# Run: python -m scripts.tune_bm25 --config configs/tune_bm25_gu_norm.yaml
+experiment: tune_bm25_gu_norm
+phase: 10
+lang: gu
+seed: 42
+
+index_dir: data/indexes/gu_native_norm   # built by configs/index_bm25_gu_norm.yaml
+normalize: [gu_nukta]         # queries get the index's rules (checked)
+floor_idf: true               # the variant chosen as the BM25 baseline (Phase 4)
+top_k: 1000
+
+split: tune
+queries: data/processed/gu/tune_queries.tsv   # native: romanized queries score ~0 for any k1/b
+qrels: data/processed/gu/tune_qrels.tsv
+metric: ndcg@10               # the main metric picks the best pair
+
+grid:
+  k1: [0.6, 0.9, 1.2, 1.5, 2.0]
+  b: [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.75, 0.9]
+
+output: results/tuning/tune_bm25_gu_norm.csv   # one row per (k1, b) with all metrics

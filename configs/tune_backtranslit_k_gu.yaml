@@ -1,0 +1,19 @@
+# Phase 10 task 4: number of IndicXlit candidates per word (k) for weighted BM25 queries,
+# chosen on the Gujarati tune split (docs/plans/10-gujarati.md), as configs/tune_backtranslit_k_hi.yaml.
+# Run: python -m scripts.tune_backtranslit_k --config configs/tune_backtranslit_k_gu.yaml
+experiment: tune_backtranslit_k_gu
+phase: 10
+lang: gu
+seed: 42
+
+bm25_config: configs/baseline_bm25_gu.yaml     # index, k1, b, IDF floor, top_k: the Gujarati baseline
+candidates_file: data/backtranslit/candidates_gu.tsv
+split: tune
+qrels: data/processed/gu/tune_qrels.tsv
+query_sets:
+  roman_natural: data/romanized/gu/tune_queries_roman_natural.tsv
+  roman_rule: data/romanized/gu/tune_queries_roman_rule.tsv
+ks: [1, 3, 5, 7, 10]          # the Hindi grid
+metric: ndcg@10
+
+output: results/tuning/tune_backtranslit_k_gu.csv

@@ -1,0 +1,31 @@
+# Phase 10 task 4: off-the-shelf e5 on Gujarati, native vs romanized queries (the gap)
+# (docs/plans/10-gujarati.md); same setup as configs/baseline_dense.yaml (Phase 4).
+# Passage length 256 chosen on tune over 512 (native nDCG@10 0.4358 vs 0.3908:
+# configs/dense_len256_gu.yaml, configs/dense_len512_gu.yaml), the same as Hindi.
+# Run: python -m scripts.run_baseline --config configs/baseline_dense_gu.yaml
+experiment: baseline_dense_e5base_gu
+phase: 10
+lang: gu
+seed: 42
+method: e5base                # run names: gu_e5base_{query_set}_{split}
+
+model: intfloat/multilingual-e5-base   # main dense model (Phase 1), not fine-tuned
+fp16: true
+dataset: data/processed/gu/corpus.jsonl   # 51,129 passages (titles are empty)
+embeddings_dir: data/embeddings/gu_e5base_len256   # encoded by configs/dense_len256_gu.yaml
+passage_max_length: 256       # chosen on tune (see above); cuts 54% of the Gujarati passages
+shard_size: 50000
+batch_size: 64
+query_max_length: 64          # the longest Gujarati query is 61 e5 tokens (data card)
+
+top_k: 1000
+splits: [tune, test]
+qrels: data/processed/gu/{split}_qrels.tsv
+query_sets:
+  native: data/processed/gu/{split}_queries.tsv
+  roman_natural: data/romanized/gu/{split}_queries_roman_natural.tsv
+  roman_rule: data/romanized/gu/{split}_queries_roman_rule.tsv
+
+output:
+  run_dir: results/runs
+  per_query_dir: results/per_query

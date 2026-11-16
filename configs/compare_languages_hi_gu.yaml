@@ -1,0 +1,25 @@
+# Phase 10 task 5: Hindi vs Gujarati, the methods run in both languages (docs/plans/10-gujarati.md).
+# Run: python -m scripts.compare_languages --config configs/compare_languages_hi_gu.yaml
+experiment: compare_languages_hi_gu
+phase: 10
+seed: 42                      # no randomness; kept for the config convention
+
+split: test
+tables:                       # language -> final table (scripts/final_table.py)
+  hi: results/final_table.csv
+  gu: results/final_table_gu.csv
+metric: ndcg@10
+query_sets: [native, roman_natural, roman_rule]   # no hand-romanized Gujarati set
+
+rows:                         # the same method in both tables (labels differ where tune chose differently)
+  - {label: "BM25", hi: "BM25", gu: "BM25"}
+  - {label: "Dense e5", hi: "Dense e5", gu: "Dense e5"}
+  - {label: "BM25 + top-k back-transliteration (k = 5 hi, 3 gu)",
+     hi: "BM25 + top-5 back-transliteration", gu: "BM25 + top-3 back-transliteration"}
+  - {label: "Dense e5 + top-1 back-transliteration",
+     hi: "Dense e5 + top-1 back-transliteration", gu: "Dense e5 + top-1 back-transliteration"}
+  - {label: "Normalized BM25 (+ top-k back-transliteration)",
+     hi: "Normalized BM25 (+ top-5 back-transliteration)", gu: "Normalized BM25 (+ top-3 back-transliteration)"}
+  - {label: "Hybrid A (final system)", hi: "Hybrid A (final system)", gu: "Hybrid A (final system)"}
+
+output: results/tables/compare_hi_gu_test.md   # generated, never edited by hand

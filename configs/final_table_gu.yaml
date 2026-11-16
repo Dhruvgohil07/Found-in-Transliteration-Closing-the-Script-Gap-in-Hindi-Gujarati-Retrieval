@@ -1,0 +1,43 @@
+# Phase 10 task 5: the Gujarati results table on test, same layout and tests as the Hindi one
+# (configs/final_table_hi.yaml), for the methods run on Gujarati (docs/plans/10-gujarati.md).
+# Run: python -m scripts.final_table --config configs/final_table_gu.yaml
+experiment: final_table_gu
+phase: 10
+lang: gu
+seed: 42
+
+split: test
+query_sets: [native, roman_natural, roman_rule]   # no hand-romanized Gujarati set
+metrics: [ndcg@10, mrr@10, recall@100, recall@1000]
+per_query_dir: results/per_query
+
+gap:                          # one pair of baselines for every row, as for Hindi
+  metric: ndcg@10
+  native: gu_e5base_native    # the strongest native single-method baseline (dense e5)
+  romanized: gu_e5base_{set}  # the same model with the romanized queries
+
+test_metric: ndcg@10
+alpha: 0.05                   # Bonferroni over every (cell, reference) comparison in the table
+references:
+  - label: BM25 romanized
+    mark: "*"
+    runs: {roman_natural: gu_bm25_roman_natural, roman_rule: gu_bm25_roman_rule}
+  - label: the best single method   # romanized sets: dense + top-1 back-transliteration, as for Hindi
+    mark: "†"                       # native: dense with the native query
+    runs: {native: gu_e5base_native, roman_natural: gu_e5base_roman_natural_bt1,
+           roman_rule: gu_e5base_roman_rule_bt1}
+latex_marks: {"*": "*", "†": "\\dagger"}
+
+rows:
+  - {phase: 10, label: "BM25", runs: {native: gu_bm25_native, roman: "gu_bm25_{set}"}}
+  - {phase: 10, label: "Dense e5", runs: {native: gu_e5base_native, roman: "gu_e5base_{set}"}}
+  - {phase: 10, label: "BM25 + top-3 back-transliteration", runs: {roman: "gu_bm25_bt3_{set}"}}
+  - {phase: 10, label: "Dense e5 + top-1 back-transliteration", runs: {roman: "gu_e5base_{set}_bt1"}}
+  - {phase: 10, label: "Normalized BM25 (+ top-3 back-transliteration)",
+     runs: {native: gu_bm25_norm_native, roman: "gu_bm25_bt3_norm_{set}"}}
+  - {phase: 10, label: "Hybrid A (final system)", runs: {native: gu_fusion_A_interp_native, roman: "gu_fusion_A_interp_{set}"}}
+
+output:                       # generated, never edited by hand
+  csv: results/final_table_gu.csv
+  markdown: results/tables/final_table_gu.md
+  latex: results/tables/final_table_gu.tex

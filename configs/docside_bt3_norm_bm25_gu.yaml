@@ -1,0 +1,31 @@
+# Phase 10 task 4: weighted top-3 back-transliteration on the normalized Gujarati index, with the
+# weighted query's terms normalized (docs/plans/10-gujarati.md), as configs/docside_bt5_norm_bm25.yaml
+# (Phase 6, Hindi with k = 5); the lexical part of hybrid A.
+# Run: python -m scripts.run_baseline --config configs/docside_bt3_norm_bm25_gu.yaml
+experiment: docside_bt3_norm_bm25_gu
+phase: 10
+lang: gu
+seed: 42                      # BM25 is deterministic; kept for the config convention
+method: bm25_bt3_norm         # run names: gu_bm25_bt3_norm_{query_set}_{split}
+
+index_dir: data/indexes/gu_native_norm    # built by configs/index_bm25_gu_norm.yaml
+normalize: [gu_nukta]         # rules chosen on tune (configs/tune_docside_normalization_gu.yaml)
+bm25:
+  k1: 1.5                     # re-tuned on tune by configs/tune_bm25_gu_norm.yaml
+  b: 0.6
+  floor_idf: true
+top_k: 1000
+
+backtranslit:
+  candidates_file: data/backtranslit/candidates_gu.tsv
+  k: 3                        # as chosen on tune (configs/tune_backtranslit_k_gu.yaml)
+
+splits: [tune, test]
+qrels: data/processed/gu/{split}_qrels.tsv
+query_sets:                   # romanized queries: the searcher builds the weighted queries itself
+  roman_natural: data/romanized/gu/{split}_queries_roman_natural.tsv
+  roman_rule: data/romanized/gu/{split}_queries_roman_rule.tsv
+
+output:
+  run_dir: results/runs
+  per_query_dir: results/per_query

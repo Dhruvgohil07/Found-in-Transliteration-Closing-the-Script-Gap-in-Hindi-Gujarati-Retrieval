@@ -1,0 +1,25 @@
+# Phase 10 task 4: BM25 with top-1 back-transliterated Gujarati queries (docs/plans/10-gujarati.md),
+# as configs/backtranslit_top1_bm25.yaml (Phase 5).
+# Run: python -m scripts.run_baseline --config configs/backtranslit_top1_bm25_gu.yaml
+experiment: backtranslit_top1_bm25_gu
+phase: 10
+lang: gu
+seed: 42                      # BM25 is deterministic; kept for the config convention
+method: bm25                  # run names: gu_bm25_{query_set}_{split}
+
+index_dir: data/indexes/gu_native   # built by configs/index_bm25_gu.yaml
+bm25:
+  k1: 1.5                     # the Gujarati BM25 baseline (configs/baseline_bm25_gu.yaml)
+  b: 0.6
+  floor_idf: true
+top_k: 1000
+
+splits: [tune, test]
+qrels: data/processed/gu/{split}_qrels.tsv
+query_sets:                   # top-1 back-transliterated (configs/backtranslit_queries_gu.yaml)
+  roman_natural_bt1: data/processed/gu/{split}_queries_roman_natural_bt1.tsv
+  roman_rule_bt1: data/processed/gu/{split}_queries_roman_rule_bt1.tsv
+
+output:
+  run_dir: results/runs
+  per_query_dir: results/per_query

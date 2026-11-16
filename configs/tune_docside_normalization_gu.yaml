@@ -1,0 +1,30 @@
+# Phase 10 task 4: leave-one-out ablation of the Gujarati normalization rules on tune
+# (docs/plans/10-gujarati.md), the Phase 6 procedure of configs/tune_docside_normalization_hi.yaml.
+# Run: python -m scripts.tune_normalization --config configs/tune_docside_normalization_gu.yaml
+experiment: tune_docside_normalization_gu
+phase: 10
+lang: gu
+seed: 42                      # indexing and BM25 are deterministic; kept for the config convention
+
+rules: [zero_width, gu_nukta, gu_chandrabindu, gu_nasal, gu_final_virama, gu_digits]   # src.data.normalize
+index_config: configs/index_bm25_gu.yaml          # corpus, tokeniser etc. of the native Gujarati index
+index_dir_pattern: data/indexes/gu_native_norm_{setting}   # git-ignored, ~57 MB each; "none" reuses
+bm25_config: configs/baseline_bm25_gu.yaml        # k1 = 1.5, b = 0.6, IDF floor, top_k
+candidates_file: data/backtranslit/candidates_gu.tsv
+k: 3                          # candidates per word, as chosen on tune (configs/tune_backtranslit_k_gu.yaml)
+
+split: tune
+qrels: data/processed/gu/tune_qrels.tsv
+query_sets:                   # native: searched as written; romanized: weighted top-k back-transliteration
+  native: data/processed/gu/tune_queries.tsv
+  roman_natural: data/romanized/gu/tune_queries_roman_natural.tsv
+  roman_rule: data/romanized/gu/tune_queries_roman_rule.tsv
+
+metric: ndcg@10
+decision_sets: [roman_natural, roman_rule]   # fixed before the run, as for Hindi: a rule is kept if
+                                             # removing it lowers the mean over these two sets
+
+output: results/tuning/tune_docside_normalization_gu.csv
+
+extra_settings:               # added after the first run, as for Hindi: the rules the decision kept,
+  kept: [gu_nukta]            # evaluated together (leave-one-out never tests this set itself)

@@ -1,0 +1,22 @@
+# Phase 10 task 4: grid search of BM25 k1 and b on the Gujarati tune split
+# (docs/plans/10-gujarati.md), same procedure and grid as configs/tune_bm25_hi.yaml.
+# Run: python -m scripts.tune_bm25 --config configs/tune_bm25_gu.yaml
+experiment: tune_bm25_gu
+phase: 10
+lang: gu
+seed: 42
+
+index_dir: data/indexes/gu_native
+floor_idf: true               # the variant chosen as the BM25 baseline (Phase 4)
+top_k: 1000
+
+split: tune
+queries: data/processed/gu/tune_queries.tsv   # native: romanized queries score ~0 for any k1/b
+qrels: data/processed/gu/tune_qrels.tsv
+metric: ndcg@10               # the main metric picks the best pair
+
+grid:
+  k1: [0.6, 0.9, 1.2, 1.5, 2.0]
+  b: [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.75, 0.9]
+
+output: results/tuning/tune_bm25_gu.csv   # one row per (k1, b) with all metrics
