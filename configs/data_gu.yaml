@@ -1,0 +1,65 @@
+# Phase 10: Gujarati data (docs/plans/10-gujarati.md, tasks 1-2).
+# Used by scripts/build_collection_gu.py, then scripts/prepare_data.py,
+# scripts/data_stats.py and scripts/sample_queries.py.
+experiment: data_gu
+lang: gu
+seed: 42
+
+collection:                   # scripts/build_collection_gu.py
+  judged:                     # native Gujarati questions over Gujarati Wikipedia paragraphs (CC0-1.0)
+    repo: mteb/IndicQARetrieval
+    revision: 206ea3c2edaa82010dea44ea18c046d0b427a7f3
+    files:
+      corpus: gu-corpus/test-00000-of-00001.parquet
+      queries: gu-queries/test-00000-of-00001.parquet
+      qrels: gu-qrels/test-00000-of-00001.parquet
+    doc_prefix: indicqa       # docnos indicqa-001 ... (the originals are 64-character hashes)
+    query_prefix: gq          # query ids gq-0001 ...
+  distractors:                # unjudged passages, so retrieval is not over 248 passages only
+    repo: wikimedia/wikipedia # Gujarati Wikipedia dump of 2023-11-01 (CC-BY-SA-3.0 / GFDL)
+    revision: b04c8d1ceb2f5cd4588862100d08de323dccfbaa
+    file: 20231101.gu/train-00000-of-00001.parquet
+    doc_prefix: guwiki        # docnos guwiki-<article id>#<k>, like MIRACL's article#passage
+    overlap_ngram: 8          # drop an article sharing >= overlap_min_shared word 8-grams
+    overlap_min_shared: 1     #   with any judged passage (it likely contains a copy of it)
+    min_words: 130            # pack lines into passages of 130..300 words, so the median length
+    max_words: 300            #   matches the judged passages (136 words); 100..250 gave 107
+    min_line_words: 5         # skip headings and short list items
+    min_last_words: 30        # shorter leftovers are merged into the previous passage or dropped
+    max_latin_share: 0.5      # drop mostly-English passages (Latin share of Latin + Gujarati letters);
+                              # exact repeats of an earlier passage are always dropped
+  output:                     # git-ignored; rebuilt by the script
+    corpus: data/processed/gu/corpus.jsonl
+    queries: data/processed/gu/labeled_queries.tsv
+    qrels: data/processed/gu/labeled_qrels.tsv
+    id_map: data/processed/gu/id_map.tsv
+    meta: data/processed/gu/collection_meta.json
+
+dataset:
+  docs: data/processed/gu/corpus.jsonl
+  labeled:                    # all 2,015 IndicQA-gu queries -> carved into tune/test
+    queries: data/processed/gu/labeled_queries.tsv
+    qrels: data/processed/gu/labeled_qrels.tsv
+  # no train split: IndicQA has one labeled split, so no Gujarati fine-tuning
+
+split:
+  n_tune: 100
+  n_test: 500                 # seeded sample of the rest, so natural romanization fits the
+                              # Gemini free tier (600 queries = 8 requests of 75)
+
+output_dir: data/processed/gu # {tune,test}_{queries,qrels}.tsv (git-ignored)
+
+stats:
+  tokenizer: intfloat/multilingual-e5-base
+  data_card: docs/data/data_card_gu.md
+  splits: [tune, test]
+  groups:                     # passage lengths per kind (docno prefix)
+    judged (IndicQA): indicqa-
+    distractors (Wikipedia): guwiki-
+  collection_meta: data/processed/gu/collection_meta.json
+  shared_with_tune: true      # count test queries whose relevant passage is also a tune one
+
+sample:
+  split: tune                 # never look at test queries
+  n_queries: 20
+  file: data/processed/gu/sample_gu.md

@@ -1,0 +1,14 @@
+{
+  "model": "gemini-3.5-flash",
+  "model_versions": [
+    "gemini-3.6-flash"
+  ],
+  "tool": "google-genai==2.34.0",
+  "temperature": 0.0,
+  "seed": 42,
+  "queries_per_batch_size": {
+    "75": 600
+  },
+  "instructions": "You romanize Gujarati web-search queries. You get a JSON list of queries written\nin Gujarati script. For each one, write how a typical Gujarati user would type the\nsame query in Latin letters on a phone or laptop keyboard: casual, everyday\nspelling, all lowercase, no accents or diacritics.\nSpell English words and well-known names the usual English way\n(ક્રિકેટ -> cricket, અમદાવાદ -> ahmedabad). Keep digits and punctuation such as \"?\" as\nthey are. Do not translate, explain, correct, add or drop words: romanize every\nword of the query.\nExample: [\"ખેડૂત આંદોલનના તાજા સમાચાર\"] -> [\"khedut andolan na taja samachar\"]\nAnswer with a JSON list of strings: one romanized query per input query, in\nthe same order.\n",
+  "finished_utc": "2026-11-16 17:57"
+}
