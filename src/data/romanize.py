@@ -1,6 +1,7 @@
 """Romanizing native-script queries, and measuring how close two romanizations are.
 
-Three ways to turn a Devanagari query into Latin script (docs/plans/03):
+Three ways to turn a native-script query (Devanagari, or Gujarati in Phase 10)
+into Latin script (docs/plans/03):
 
 - **rule** (contrast): Uroman, the rule-based romanizer the reference paper used,
   called exactly as in the paper's ``transliterate.py``:
@@ -27,29 +28,40 @@ from typing import Any
 
 from src.data.load import Queries
 
-# Any character from the Devanagari Unicode block (U+0900-U+097F).
-DEVANAGARI = re.compile(r"[ऀ-ॿ]")
+# Any character from the Devanagari (U+0900-U+097F) or Gujarati (U+0A80-U+0AFF)
+# Unicode block: none may be left in a romanized query.
+NATIVE_SCRIPT = re.compile(r"[ऀ-ॿ઀-૿]")
+GUJARATI_VISARGA = "ઃ"
 
 
 # --- rule: Uroman -----------------------------------------------------------
 
 def romanize_uroman(queries: Queries, lang: str) -> Queries:
-    """Romanize every query with Uroman; ``lang`` is an ISO 639-3 code (``hin``)."""
+    """Romanize every query with Uroman; ``lang`` is an ISO 639-3 code (``hin``, ``guj``).
+
+    Uroman 1.3.1.1 leaves the Gujarati visarga (ઃ, U+0A83) unchanged, while it
+    turns the Devanagari one into ``h`` (दुःख -> duhkh). The Gujarati sign gets
+    the same ``h`` afterwards (Phase 10: one test query, દુઃખ).
+    """
     import uroman  # imported here: loading its rule tables takes a few seconds
 
     romanizer = uroman.Uroman()
-    return {qid: romanizer.romanize_string(text, lang=lang) for qid, text in queries.items()}
+    return {
+        qid: romanizer.romanize_string(text, lang=lang).replace(GUJARATI_VISARGA, "h")
+        for qid, text in queries.items()
+    }
 
 
 # --- natural: an LLM ---------------------------------------------------------
 
 def check_romanized(text: str) -> None:
     """Raise ``ValueError`` if a romanized query is unusable: empty, still
-    containing Devanagari, or containing a tab/newline (it must fit one TSV field)."""
+    containing Devanagari or Gujarati letters, or containing a tab/newline (it
+    must fit one TSV field)."""
     if not text.strip():
         raise ValueError("empty romanization")
-    if DEVANAGARI.search(text):
-        raise ValueError(f"romanization still contains Devanagari: {text!r}")
+    if NATIVE_SCRIPT.search(text):
+        raise ValueError(f"romanization still contains native script: {text!r}")
     if "\t" in text or "\n" in text or "\r" in text:
         raise ValueError(f"romanization contains a tab or newline: {text!r}")
 

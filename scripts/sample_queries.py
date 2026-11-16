@@ -33,8 +33,10 @@ def main() -> None:
     relevant = {qid: sorted(d for d, r in qrels[qid].items() if r > 0) for qid in qids}
     docs = get_docs(cfg["dataset"]["docs"], {d for ds in relevant.values() for d in ds})
 
+    labeled = cfg["dataset"]["labeled"]
+    source = labeled["queries"] if isinstance(labeled, dict) else labeled   # local files (Gujarati)
     lines = [
-        f"# Sample of {len(qids)} {sample_cfg['split']} queries ({cfg['dataset']['labeled']})",
+        f"# Sample of {len(qids)} {sample_cfg['split']} queries ({source})",
         "",
         f"Seed {cfg['seed']}. Relevant passages only (relevance > 0).",
     ]

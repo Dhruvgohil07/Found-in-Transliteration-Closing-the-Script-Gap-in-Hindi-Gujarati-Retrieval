@@ -104,6 +104,8 @@ SEARCHERS: dict[str, Callable[[dict], Searcher]] = {
     "e5ft_N": dense_searcher,                   # Phase 7: e5-base fine-tuned on N / 50 / T
     "e5ft_50": dense_searcher,
     "e5ft_T": dense_searcher,
+    "e5base_len256": dense_searcher,            # Phase 10: Gujarati passage length, compared on tune
+    "e5base_len512": dense_searcher,
     "bm25": bm25_searcher,
     "bm25_classic": bm25_searcher,
     "bm25_idf0": bm25_searcher,
@@ -113,6 +115,8 @@ SEARCHERS: dict[str, Callable[[dict], Searcher]] = {
     "bm25_romindex": bm25_searcher,             # Phase 6: romanized index, raw romanized queries
     "bm25_romindex_norm": bm25_searcher,        # Phase 6: romanized index and queries with the romanized key
     "bm25_romindex_ng4": bm25_searcher,         # Phase 6: the same, cut into character 4-grams
+    "bm25_bt3": bm25_backtranslit_searcher,     # Phase 10: Gujarati, k = 3 chosen on tune
+    "bm25_bt3_norm": bm25_backtranslit_searcher,
 }
 
 

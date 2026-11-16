@@ -23,10 +23,8 @@ import sys
 import time
 from collections.abc import Iterator
 
-import ir_datasets
-
-from src.data.load import full_text, iter_docs
-from src.data.normalize import DEVANAGARI_RULES, ROMAN_RULES, check_rules, text_key
+from src.data.load import count_docs, full_text, iter_docs
+from src.data.normalize import NATIVE_RULES, ROMAN_RULES, check_rules, text_key
 from src.retrieval.bm25 import (
     build_index,
     index_stats,
@@ -53,8 +51,8 @@ def build_corpus_index(cfg: dict, *, force: bool = False) -> bool:
     if (index_dir / "data.properties").exists() and not force:
         return False
 
-    chosen = check_rules(cfg.get("normalize", []), DEVANAGARI_RULES)
-    rules = [rule for rule in DEVANAGARI_RULES if rule in chosen]  # canonical order
+    chosen = check_rules(cfg.get("normalize", []), NATIVE_RULES)   # Devanagari or Gujarati (gu_) rules
+    rules = [rule for rule in NATIVE_RULES if rule in chosen]  # canonical order
     chosen = check_rules(cfg.get("roman_normalize", []), ROMAN_RULES)
     roman_rules = [rule for rule in ROMAN_RULES if rule in chosen]
     ngrams = cfg.get("ngrams")
@@ -80,7 +78,7 @@ def build_corpus_index(cfg: dict, *, force: bool = False) -> bool:
         with open(resolve_path(cfg["docs_file"]), encoding="utf-8") as f:
             expected = sum(1 for _ in f)
     else:
-        expected = ir_datasets.load(cfg["dataset"]).docs_count()
+        expected = count_docs(cfg["dataset"])
     print(f"indexed in {minutes:.1f} min -> {cfg['index_dir']} (rules: {', '.join(rules) or 'none'}; "
           f"romanized rules: {', '.join(roman_rules) or 'none'}; n-grams: {ngrams or 'none'})")
     for name, value in stats.items():

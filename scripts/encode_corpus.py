@@ -13,9 +13,7 @@ end the script checks that every passage of the corpus has a vector.
 import argparse
 import time
 
-import ir_datasets
-
-from src.data.load import full_text, iter_docs
+from src.data.load import count_docs, full_text, iter_docs
 from src.retrieval.dense import encode_corpus, load_corpus, load_model
 from src.utils.config import load_config, resolve_path
 from src.utils.seed import set_seed
@@ -36,7 +34,7 @@ def main() -> None:
     print(f"{n_new} shards encoded in {(time.perf_counter() - start) / 60:.1f} min")
 
     docnos, vectors = load_corpus(out_dir)
-    expected = ir_datasets.load(cfg["dataset"]).docs_count()
+    expected = count_docs(cfg["dataset"])
     if len(docnos) != expected or len(set(docnos)) != len(docnos):
         raise RuntimeError(f"{len(docnos):,} vectors ({len(set(docnos)):,} distinct), corpus has {expected:,}")
     print(f"all {expected:,} passages encoded: {vectors.shape}, {vectors.nbytes / 1e6:,.0f} MB")

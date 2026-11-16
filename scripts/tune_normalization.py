@@ -1,4 +1,4 @@
-"""Leave-one-out ablation of the Devanagari normalization rules on the tune split.
+"""Leave-one-out ablation of the native-script normalization rules on the tune split.
 
 Run from the repo root inside the conda env `script-gap`:
 
@@ -19,6 +19,9 @@ differ. A rule is **kept** if removing it lowers the decision score: the mean
 t-tests (``all`` against each other setting) are printed to show how large the
 differences are next to the noise. Only the tune split is allowed; the table goes
 to ``output`` and no rows go to results/results.csv (which holds reported runs).
+
+The rules tried are the Devanagari ones unless the config lists ``rules``
+(Gujarati, Phase 10: the ``gu_`` twins and ``zero_width``).
 """
 
 import argparse
@@ -30,6 +33,7 @@ from src.data.backtranslit import load_candidates, weighted_query
 from src.data.load import read_qrels, read_queries
 from src.data.normalize import (
     DEVANAGARI_RULES,
+    NATIVE_RULES,
     check_rules,
     normalize_devanagari,
     normalize_weighted,
@@ -46,15 +50,17 @@ from src.retrieval.bm25 import (
 from src.utils.config import load_config, resolve_path
 
 
-def settings(extra: dict[str, list[str]] | None = None) -> dict[str, list[str]]:
-    """``{setting: rules}``: none, all, all-but-one for every rule, then any
-    ``extra`` settings from the config (e.g. the set of kept rules, which
-    leave-one-out alone never evaluates together)."""
-    out = {"none": [], "all": list(DEVANAGARI_RULES)}
-    for rule in DEVANAGARI_RULES:
-        out[f"no_{rule}"] = [r for r in DEVANAGARI_RULES if r != rule]
+def settings(extra: dict[str, list[str]] | None = None,
+             universe: tuple[str, ...] = DEVANAGARI_RULES) -> dict[str, list[str]]:
+    """``{setting: rules}``: none, all, all-but-one for every rule of ``universe``,
+    then any ``extra`` settings from the config (e.g. the set of kept rules, which
+    leave-one-out alone never evaluates together). Rules keep their run order."""
+    universe = tuple(r for r in NATIVE_RULES if r in check_rules(universe, NATIVE_RULES))
+    out = {"none": [], "all": list(universe)}
+    for rule in universe:
+        out[f"no_{rule}"] = [r for r in universe if r != rule]
     for name, rules in (extra or {}).items():
-        out[name] = [r for r in DEVANAGARI_RULES if r in check_rules(rules, DEVANAGARI_RULES)]
+        out[name] = [r for r in universe if r in check_rules(rules, universe)]
     return out
 
 
@@ -72,7 +78,9 @@ def main() -> None:
     all_qrels = read_qrels(resolve_path(cfg["qrels"]))
     query_sets = {name: read_queries(resolve_path(path)) for name, path in cfg["query_sets"].items()}
     metric = cfg["metric"]
-    all_settings = settings(cfg.get("extra_settings"))
+    universe = tuple(cfg.get("rules", DEVANAGARI_RULES))
+    all_settings = settings(cfg.get("extra_settings"), universe)
+    universe = all_settings["all"]                      # in run order
 
     rows, per_query = [], {}
     for setting, rules in all_settings.items():
@@ -118,10 +126,10 @@ def main() -> None:
                   for name in query_sets}
             print(f"  {setting:18} " + "  ".join(f"{n}={p:.3f}" for n, p in ps.items()))
 
-    kept = [rule for rule in DEVANAGARI_RULES
+    kept = [rule for rule in universe
             if pivot.loc["all", "decision"] - pivot.loc[f"no_{rule}", "decision"] > 0]
     print("\nrule: decision(all) - decision(all but the rule)")
-    for rule in DEVANAGARI_RULES:
+    for rule in universe:
         delta = pivot.loc["all", "decision"] - pivot.loc[f"no_{rule}", "decision"]
         print(f"  {rule:14} {delta:+.4f}  {'keep' if rule in kept else 'drop'}")
     print(f"\nkept rules: {kept}")

@@ -30,6 +30,15 @@ ablation can switch it off; they always run in the order below:
 - ``digits``: Devanagari digits -> ASCII digits (२०२३ -> 2023).
 
 Non-Devanagari text passes through unchanged (except NFC under ``nukta``).
+
+**Gujarati rules** (Phase 10): the Gujarati Unicode block repeats the
+Devanagari layout 0x180 code points higher (् U+094D -> ્ U+0ACD, ં U+0902 ->
+ં U+0A82, digits ० -> ૦, क -> ક), so each rule above has a Gujarati twin built
+by shifting its characters: ``gu_nukta``, ``gu_chandrabindu``, ``gu_nasal``,
+``gu_final_virama``, ``gu_digits`` (``zero_width`` is not script-specific and
+serves both). They live in the same registry (``NATIVE_RULES``) so indexes,
+searchers and the tuning script handle them like the Hindi ones; every default
+stays ``DEVANAGARI_RULES``, so nothing Hindi changes.
 """
 
 import re
@@ -81,6 +90,39 @@ DEVANAGARI_RULE_FUNCTIONS: dict[str, Callable[[str], str]] = {
 }
 DEVANAGARI_RULES = tuple(DEVANAGARI_RULE_FUNCTIONS)  # all rules, in the order they run
 
+# --- Gujarati twins (Phase 10) ----------------------------------------------
+
+GUJARATI_OFFSET = 0x180  # Gujarati block (U+0A80) - Devanagari block (U+0900)
+
+
+def _to_gujarati(chars: str) -> str:
+    """Shift every Devanagari character of ``chars`` into the Gujarati block;
+    anything else (``-`` in a character range, zero-width marks) is kept."""
+    return "".join(chr(ord(c) + GUJARATI_OFFSET) if "\u0900" <= c <= "\u097f" else c for c in chars)
+
+
+GU_VIRAMA, GU_NUKTA = _to_gujarati(VIRAMA), _to_gujarati(NUKTA)
+GU_CHANDRABINDU, GU_ANUSVARA = _to_gujarati(CHANDRABINDU), _to_gujarati(ANUSVARA)
+_GU_NASAL = re.compile("|".join(
+    f"{_to_gujarati(nasal)}{GU_VIRAMA}(?=[{_to_gujarati(cls)}])" for nasal, cls in NASAL_CLASSES.items()))
+# Gujarati letters and marks are U+0A81-U+0AE3 and U+0AF9-U+0AFF; the digits,
+# the abbreviation sign and the rupee sign (U+0AE6-U+0AF1) end a word.
+_GU_WORD_CHARS = "\u0a81-\u0ae3\u0af9-\u0aff" + ZERO_WIDTH
+_GU_FINAL_VIRAMA = re.compile(f"{GU_VIRAMA}(?![{_GU_WORD_CHARS}])")
+_GU_DIGITS = str.maketrans({chr(0x0AE6 + i): str(i) for i in range(10)})  # ૦ .. ૯ -> 0 .. 9
+
+GUJARATI_RULE_FUNCTIONS: dict[str, Callable[[str], str]] = {
+    "gu_nukta": lambda text: unicodedata.normalize("NFC", unicodedata.normalize("NFD", text).replace(GU_NUKTA, "")),
+    "gu_chandrabindu": lambda text: text.replace(GU_CHANDRABINDU, GU_ANUSVARA),
+    "gu_nasal": lambda text: _GU_NASAL.sub(GU_ANUSVARA, text),
+    "gu_final_virama": lambda text: _GU_FINAL_VIRAMA.sub("", text),
+    "gu_digits": lambda text: text.translate(_GU_DIGITS),
+}
+GUJARATI_RULES = ("zero_width", *GUJARATI_RULE_FUNCTIONS)   # the rules that apply to Gujarati text
+
+NATIVE_RULE_FUNCTIONS = {**DEVANAGARI_RULE_FUNCTIONS, **GUJARATI_RULE_FUNCTIONS}
+NATIVE_RULES = tuple(NATIVE_RULE_FUNCTIONS)  # every known native-script rule, in the order they run
+
 
 def check_rules(rules: Iterable[str], known: tuple[str, ...]) -> set[str]:
     """The chosen rule names as a set; unknown names raise ``ValueError``."""
@@ -92,15 +134,16 @@ def check_rules(rules: Iterable[str], known: tuple[str, ...]) -> set[str]:
 
 
 def normalize_devanagari(text: str, rules: Iterable[str] = DEVANAGARI_RULES) -> str:
-    """Apply the chosen Devanagari rules (all by default) to ``text``.
+    """Apply the chosen native-script rules (all Devanagari rules by default) to ``text``.
 
-    The rules always run in the order of ``DEVANAGARI_RULES``, whatever order
-    ``rules`` lists them in, so a set of rules always gives the same key.
+    ``rules`` may also name the Gujarati twins (``gu_...``). The rules always
+    run in the order of ``NATIVE_RULES``, whatever order ``rules`` lists them
+    in, so a set of rules always gives the same key.
     """
-    chosen = check_rules(rules, DEVANAGARI_RULES)
-    for name in DEVANAGARI_RULES:
+    chosen = check_rules(rules, NATIVE_RULES)
+    for name in NATIVE_RULES:
         if name in chosen:
-            text = DEVANAGARI_RULE_FUNCTIONS[name](text)
+            text = NATIVE_RULE_FUNCTIONS[name](text)
     return text
 
 
