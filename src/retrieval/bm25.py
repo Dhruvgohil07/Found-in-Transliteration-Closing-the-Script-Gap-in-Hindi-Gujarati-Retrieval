@@ -58,11 +58,13 @@ def build_index(
     stemmer: str = "none",
     stopwords: str = "none",
     docno_length: int = 32,
+    overwrite: bool = False,
 ) -> str:
     """Index ``{"docno", "text"}`` dicts into ``index_dir`` and return the index path.
 
     ``docno_length`` is the space Terrier reserves for each docno; a longer
-    docno raises ``ValueError`` instead of being cut off silently.
+    docno raises ``ValueError`` instead of being cut off silently. Terrier
+    refuses to write into an existing index unless ``overwrite`` is set.
     """
     start_java()
 
@@ -78,6 +80,7 @@ def build_index(
         tokeniser=tokeniser,
         stemmer=getattr(pt.terrier.TerrierStemmer, stemmer),
         stopwords=getattr(pt.terrier.TerrierStopwords, stopwords),
+        overwrite=overwrite,
     )
     return str(indexer.index(checked(docs)))
 

@@ -66,7 +66,7 @@ def build_corpus_index(cfg: dict, *, force: bool = False) -> bool:
     build_index(
         docs, index_dir,
         tokeniser=cfg["tokeniser"], stemmer=cfg["stemmer"], stopwords=cfg["stopwords"],
-        docno_length=cfg["docno_length"],
+        docno_length=cfg["docno_length"], overwrite=force,
     )
     write_index_normalization(index_dir, rules, roman_rules, ngrams)
     minutes = (time.perf_counter() - start) / 60
