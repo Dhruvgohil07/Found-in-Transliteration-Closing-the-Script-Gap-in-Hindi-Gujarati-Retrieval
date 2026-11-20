@@ -1,0 +1,80 @@
+# Phase 11: the side-by-side search demo (docs/plans/11-demo-report.md, app/README.md).
+# Every column points at the experiment config behind a reported run, so the demo uses
+# exactly those settings. query: raw (as typed), bt1 (top-1 back-transliteration) or
+# weighted (weighted top-k back-transliteration); fusion: a hybrid's fusion config.
+# A query typed in native script runs the "native" definition (no back-transliteration).
+# Used by app/app.py (run: streamlit run app/app.py) and scripts/build_demo_store.py.
+experiment: demo
+seed: 42                      # search is deterministic; kept for the config convention
+
+xlit_service: http://127.0.0.1:8765   # scripts/indicxlit/serve.py in Docker (app/README.md)
+show_top: 10                  # passages shown per column (each method still ranks the top 1000)
+
+languages:
+  hi:
+    label: Hindi
+    dataset: miracl/hi                         # passages for the store
+    store: data/demo/hi_passages.sqlite        # git-ignored; scripts/build_demo_store.py
+    candidates_file: data/backtranslit/candidates_hi.tsv   # frozen candidates (live service for new words)
+    columns:
+      - title: BM25, query as typed (baseline)
+        romanized: {config: configs/baseline_bm25.yaml, query: raw}
+        native: {config: configs/baseline_bm25.yaml, query: raw}
+      - title: BM25 + top-5 back-transliteration
+        romanized: {config: configs/docside_bt5_norm_bm25.yaml, query: weighted}
+        native: {config: configs/docside_bm25_norm.yaml, query: raw}
+      - title: Fine-tuned dense e5 (N)
+        romanized: {config: configs/finetuned_dense_N.yaml, query: bt1}
+        native: {config: configs/finetuned_dense_N.yaml, query: raw}
+      - title: Hybrid A (final system)
+        romanized: {fusion: configs/fusion_A_interp.yaml}
+        native: {fusion: configs/fusion_A_interp_native.yaml}
+    known_queries:             # judged queries: the demo marks their relevant passages
+      tune:
+        qrels: data/processed/tune_qrels.tsv
+        queries: [data/processed/tune_queries.tsv, data/romanized/tune_queries_roman_natural.tsv,
+                  data/romanized/tune_queries_roman_rule.tsv]
+      test:
+        qrels: data/processed/test_qrels.tsv
+        queries: [data/processed/test_queries.tsv, data/romanized/test_queries_roman_natural.tsv,
+                  data/romanized/test_queries_roman_rule.tsv, data/romanized/test_queries_roman_human_a.tsv]
+    examples:                  # tune queries (never test), one of each kind, for which hybrid A has nDCG@10 >= 0.5
+                               # in results/per_query (a relevant passage near the top); plus the motivating example
+      - {kind: romanized, query: "vijayanagar samrajya shasan ka ant kis yuddh ko mana jata hai?"}
+      - {kind: code-mixed, query: "bharat ke kis shahar mein nse stock exchange sthit hai?"}
+      - {kind: named entity, query: "maldiv ko minicoy kisse alag karta hai?"}
+      - {kind: native script, query: "मध्य प्रदेश कितने भागों में विभाजित है?"}
+      - {kind: not judged, query: "kisan andolan news"}
+
+  gu:
+    label: Gujarati
+    dataset: data/processed/gu/corpus.jsonl
+    store: data/demo/gu_passages.sqlite
+    candidates_file: data/backtranslit/candidates_gu.tsv
+    columns:
+      - title: BM25, query as typed (baseline)
+        romanized: {config: configs/baseline_bm25_gu.yaml, query: raw}
+        native: {config: configs/baseline_bm25_gu.yaml, query: raw}
+      - title: BM25 + top-3 back-transliteration
+        romanized: {config: configs/docside_bt3_norm_bm25_gu.yaml, query: weighted}
+        native: {config: configs/docside_bm25_norm_gu.yaml, query: raw}
+      - title: Dense e5 (no Gujarati fine-tuning)
+        romanized: {config: configs/backtranslit_top1_dense_gu.yaml, query: bt1}
+        native: {config: configs/baseline_dense_gu.yaml, query: raw}
+      - title: Hybrid A (final system)
+        romanized: {fusion: configs/fusion_A_interp_gu.yaml}
+        native: {fusion: configs/fusion_A_interp_native_gu.yaml}
+    known_queries:
+      tune:
+        qrels: data/processed/gu/tune_qrels.tsv
+        queries: [data/processed/gu/tune_queries.tsv, data/romanized/gu/tune_queries_roman_natural.tsv,
+                  data/romanized/gu/tune_queries_roman_rule.tsv]
+      test:
+        qrels: data/processed/gu/test_qrels.tsv
+        queries: [data/processed/gu/test_queries.tsv, data/romanized/gu/test_queries_roman_natural.tsv,
+                  data/romanized/gu/test_queries_roman_rule.tsv]
+    examples:                  # chosen by the same rule as for Hindi
+      - {kind: romanized, query: "himalay sheno bhandar che?"}
+      - {kind: code-mixed, query: "vallabhbhai patelni patni zaverba cancer surgery mate kai hospitalma dakhal thaya hata?"}
+      - {kind: named entity, query: "narendra modine kaya arthashastriono pan teko malyo hato?"}
+      - {kind: native script, query: "1947 માં આઝાદી પછી કયા રાજ્યના ભાગરૂપે ગુજરાતમાં કોંગ્રેસ સત્તામાં હતી?"}

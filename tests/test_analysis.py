@@ -2,6 +2,7 @@
 
 import pandas as pd
 
+from scripts.check_report_numbers import pvalue_matches, report_numbers
 from scripts.compare_languages import rank_agreement, ranks
 from scripts.failure_buckets import bucket, bucket_order, missed_words, native_words
 from scripts.plot_per_query import outcome
@@ -59,3 +60,18 @@ def test_rank_agreement_same_and_reversed_order():
     a = pd.Series({"x": 0.1, "y": 0.2, "z": 0.3})
     assert rank_agreement(a, a * 2) == 1.0
     assert rank_agreement(a, -a) == -1.0
+
+
+# --- check_report_numbers.py (Phase 11) ----------------------------------------
+
+
+def test_report_numbers_skip_comments_inputs_and_short_numbers():
+    # line 1: 0.61 has too few decimals; line 2: a comment; line 3: a generated table input
+    tex = "nDCG@10 0.6115 and 0.61\n% 0.9999 in a comment\n\\input{generated/t.tex} 0.1234\nCER 0.096"
+    assert report_numbers(tex, 3) == [(1, "0.6115"), (4, "0.096")]
+
+
+def test_pvalue_matches():
+    assert pvalue_matches("0.003", 0.0034811)
+    assert not pvalue_matches("0.003", 0.0046)
+    assert pvalue_matches("< 0.001", 0.00028) and not pvalue_matches("< 0.001", 0.0012)
