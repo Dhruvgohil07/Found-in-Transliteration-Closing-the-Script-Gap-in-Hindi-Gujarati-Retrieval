@@ -57,7 +57,7 @@ This project **reproduces that script gap** and **builds and compares methods th
 | Figures | matplotlib | decided |
 | Notebooks | Jupyter (exploration + error analysis only) | decided |
 | Tests / lint | pytest (for pure functions), ruff | decided |
-| Demo | Streamlit (or Gradio) | confirm in Phase 11 |
+| Demo | Streamlit 1.66.1; live back-transliteration by IndicXlit as a small HTTP service in the Docker image | decided (Phase 11) |
 
 **Ask before adding any dependency not listed here.**
 
@@ -73,11 +73,13 @@ data/                 raw + processed corpora, queries, qrels (git-ignored)
   backtranslit/       frozen IndicXlit candidates (versioned: regenerated only with the Docker image)
   annotations/        hand-made labels, e.g. named-entity tags of test queries (versioned: not regenerable)
   corpus_roman/       the corpus romanized with Uroman (git-ignored: 238 MB, rebuilt by scripts/romanize_corpus.py)
+  demo/               SQLite passage stores for the demo (git-ignored, rebuilt by scripts/build_demo_store.py)
 src/
   data/               loading, splits, romanization, back-transliteration, normalization
   retrieval/          bm25, dense, fusion (RRF and score interpolation: dual index, hybrids)
   train/              training-pair building + dense retriever fine-tuning
   eval/               metrics, significance tests, result tables
+  demo/               search demo: IndicXlit client, passage store, side-by-side pipeline (Phase 11)
   utils/              seeds, config loading, run-file I/O
 scripts/              small entry-point scripts (e.g. environment check)
 tests/                pytest unit tests for pure functions in src/
@@ -93,7 +95,7 @@ results/
   final_table.csv     the final results table, one row per method and query set (Phase 9)
 models/               fine-tuned checkpoints (git-ignored)
 notebooks/            exploration and error analysis (walkthroughs of generated results; outputs cleared)
-app/                  demo search UI
+app/                  demo search UI (Streamlit) and its README
 docker/               container definitions for tools that do not run on Windows (IndicXlit)
 docs/
   SPECS.md            this file
@@ -101,7 +103,8 @@ docs/
   plans/              phase-wise plans (00-overview + one file per phase)
   paper_notes.md      reference paper setup and headline results (Phase 1)
   data/               data cards (Phase 2, Phase 10)
-  report/             final report source + PDF (Phase 11)
+  report/             final report: report.tex, references.bib, README (Overleaf build), generated/ (copies of
+                      results tables and figures, by scripts/build_report_assets.py), report.pdf (Phase 11)
 ```
 
 - All written documentation lives under `docs/`. When a phase needs a new document, add it there and update this tree and the one in `docs/plans/00-overview.md`.
@@ -244,9 +247,10 @@ output:
 
 ## 9. Demo (Phase 11)
 
-- Type a romanized query → see native-script results **side by side** from: BM25 with the raw romanized query, BM25 with back-transliteration, fine-tuned dense, and the final hybrid.
-- Show the back-transliterated query; include ready example queries (romanized, code-mixed, named entity).
-- Loads prebuilt indexes and embeddings only; no indexing or training inside the app.
+- Type a romanized query → see native-script results **side by side** from: BM25 with the raw romanized query, BM25 with back-transliteration, fine-tuned dense (Gujarati: off-the-shelf e5), and the final hybrid; Hindi and Gujarati.
+- Show the back-transliterated query and highlight query terms; include ready example queries (romanized, code-mixed, named entity, native script).
+- Loads prebuilt indexes and embeddings only; no indexing or training inside the app. Every column is an existing experiment config (`configs/demo.yaml`).
+- Words seen in the experiments use the frozen IndicXlit candidates; new words go to IndicXlit running as a small HTTP service in the Docker image (`scripts/indicxlit/serve.py`). How to launch: `app/README.md`.
 
 ---
 

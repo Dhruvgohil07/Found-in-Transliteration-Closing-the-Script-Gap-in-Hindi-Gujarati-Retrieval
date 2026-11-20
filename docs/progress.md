@@ -1,8 +1,8 @@
 # Progress
 
 ## Current phase
-**Phase 10 — Gujarati extension** (plan: docs/plans/10-gujarati.md); started 2026-11-16 on branch
-`phase-10/gujarati`; done and review gate approved (2026-11-17), not committed yet.
+**Phase 11 — Demo & report** (plan: docs/plans/11-demo-report.md); started 2026-11-17 on branch
+`phase-11/demo-report`; demo and report draft done, review gate pending.
 
 ## Completed
 - [x] Project brief and conventions in CLAUDE.md
@@ -309,11 +309,26 @@
   (hybrid A first and raw baselines last everywhere; lexical and dense back-transliteration swap
   places, not significantly); hybrid A recovers 110% of the natural-query gap
 
+- [x] Phase 10 merged into `main` (2026-11-17)
+- [x] Phase 11 decisions (2026-11-17): Streamlit; IndicXlit as a Docker HTTP service for new words;
+  report in LaTeX compiled on Overleaf; demo in Hindi and Gujarati
+- [x] Phase 11 demo (2026-11-17): `app/app.py` + `app/README.md`; `src/demo/` (xlit client, SQLite passage
+  store, pipeline built from experiment configs); `scripts/indicxlit/serve.py` (+ shared
+  `xlit_scoring.py`); `scripts/build_demo_store.py`; `configs/demo.yaml`. Each column reproduces its
+  run file's top 10 on judged tune queries; browser run-through done; 11 tests (248 in total)
+
+- [x] Phase 11 report draft (2026-11-17): `docs/report/report.tex` + `references.bib` + `README.md`;
+  generated tables and figures copied by `scripts/build_report_assets.py`; every number checked by
+  `scripts/check_report_numbers.py` (137 traced, p-values recomputed); `compare_languages.py` writes a
+  LaTeX table; 2 tests (250 in total)
+
 ## In progress
 - (none)
 
 ## Next up
-- Commit Phase 10 (when asked), then Phase 11 — demo and report
+- Compile the report on Overleaf (XeLaTeX), save `docs/report/report.pdf`, final read; check the
+  bibliography entries against the publishers' pages
+- Phase 11 review gate: demo run-through from a clean start, final read of the report
 
 ## Open decisions / questions
 - Languages → decided: Hindi core, Gujarati as a separate droppable phase (Phase 10,
@@ -427,7 +442,10 @@
 - Hindi normalization for BM25 → partly addressed in Phase 6: the Devanagari key raises native
   BM25 test nDCG@10 from 0.381 to 0.404 (p = 0.003); still below MIRACL's Lucene BM25 with the
   Hindi analyzer (0.458), which also stems
-- Demo stack → open: Streamlit or Gradio; decide in Phase 11
+- Demo stack → decided: Streamlit 1.66.1 (simple side-by-side columns and resource caching)
+- Live back-transliteration in the demo → decided: IndicXlit as an HTTP service in the Docker image
+  (only words missing from the frozen candidates; Docker Desktop must run for new words)
+- Report build → decided: LaTeX in `docs/report/`, compiled on Overleaf (no local TeX)
 - Gujarati collection → decided: IndicQA-gu + unjudged Wikipedia distractors (248 judged passages
   alone make retrieval near-trivial); query-level tune/test split kept although 171 of 500 test
   queries share a relevant passage with tune (only global parameters are tuned)
