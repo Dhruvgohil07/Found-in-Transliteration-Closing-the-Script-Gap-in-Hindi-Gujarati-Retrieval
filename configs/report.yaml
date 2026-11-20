@@ -1,0 +1,36 @@
+# Phase 11: the report (docs/report/report.tex), compiled with XeLaTeX on Overleaf.
+# Used by scripts/build_report_assets.py (copies generated tables and figures next to the report,
+# so docs/report/ can be uploaded to Overleaf as it is) and scripts/check_report_numbers.py
+# (every metric value in the report must appear in the sources below).
+experiment: report
+seed: 42                      # nothing random; kept for the config convention
+
+report: docs/report/report.tex
+assets_dir: docs/report/generated          # generated copies, never edited by hand
+assets:                                    # source -> copied under assets_dir with the same file name
+  - results/tables/final_table_hi.tex
+  - results/tables/final_table_gu.tex
+  - results/tables/compare_hi_gu_test.tex
+  - results/figures/wins_ties_losses_hybridA.png
+  - results/figures/scatter_components_natural.png
+
+number_sources:                            # where a number in the report may come from
+  - results/results.csv
+  - results/final_table.csv
+  - results/final_table_gu.csv
+  - results/tables/*.md
+  - results/tuning/*.csv
+  - docs/paper_notes.md                    # the reference paper's own numbers (with table and section)
+  - docs/data/*.md                         # data cards (statistics computed by scripts/data_stats.py)
+min_decimals: 3                            # numbers with at least this many decimals are checked:
+                                           # 4+ decimals must appear exactly in a source; shorter ones
+                                           # must be a p-value or a documented number below
+
+pvalues:                                   # recomputed from results/per_query (paired t-test) at each check
+  - {text: "0.003", a: hi_bm25_norm_native_test, b: hi_bm25_native_test, metric: ndcg@10}
+  - {text: "< 0.001", a: hi_e5ft_T_native_test, b: hi_e5base_native_test, metric: ndcg@10}
+  - {text: "< 0.001", a: hi_fusion_A_interp_native_test, b: hi_e5base_native_test, metric: ndcg@10}
+
+documented:                                # computed by a script but not stored under results/
+  "0.096": "CER natural vs hand-romanized (human A), 50 test queries: python -m scripts.romanization_quality --config configs/romanize_hi.yaml"
+  "0.236": "CER rule (Uroman) vs hand-romanized (human A), same command"
